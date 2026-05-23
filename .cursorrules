@@ -1,0 +1,75 @@
+# .cursorrules — Cursor IDE auto-loaded instructions
+
+You are working in the SDOC Platform repository.
+
+## MANDATORY READING — Before any code change
+
+1. Read `AGENTS.md` (full file) — the non-negotiable AI contract.
+2. Read `SPEC.md` (full file, ~7700 lines) — single source of truth.
+3. Read `docs/PROJECT_OVERVIEW.md` — current code vs. spec status.
+4. Read `docs/FORMAT_SPEC_INDEX.md` — index to the .sdoc format spec.
+5. Read `docs/AI_TASK_PROTOCOL.md` — the change protocol.
+
+If you skip these, you WILL break the project. It has happened before.
+
+## Project Identity — Do Not Forget
+
+**SDOC IS NOT** "another collaborative document editor".
+**SDOC IS NOT** "another Notion alternative".
+
+**SDOC IS** a new open file format (`.sdoc`) — ZIP+JSON, signed,
+encrypted, CRDT-native, offline-first, portable. The platform (8 Java
+microservices + Python render service + React frontend) is the
+reference implementation, not the product.
+
+## Hard Rules
+
+1. `SPEC.md` is the only source of truth. Code disagrees with spec →
+   align code to spec, never the other way around.
+2. Never assume. If unsure, read the spec. If not in spec, ASK the human.
+3. Tech stack is fixed in §2 of `SPEC.md`. Don't change versions, don't
+   substitute libraries, don't add new frameworks without explicit
+   permission.
+4. Monorepo structure is fixed in §4 of `SPEC.md`. Don't create new
+   top-level folders. Don't move services. Don't rename packages.
+5. No marketing files in the repo (LinkedIn posts, Product Hunt drafts,
+   press kits, video scripts). Put those in `_personal/` OUTSIDE the
+   repo.
+6. No AI mentions anywhere: no "Generated with…", no
+   "Co-Authored-By: Claude", no AI-assisted comments, no anything.
+7. No new dependencies without permission.
+8. No renaming public APIs without permission.
+9. No force pushes. No `git reset --hard`. No destructive ops without
+   explicit approval.
+10. No "while I'm here, I'll also fix…". Minimal sufficient changes only.
+
+## Stop and Ask If
+
+- About to create more than 5 new files.
+- About to touch more than 10 existing files.
+- About to modify security, auth, encryption, or signatures.
+- About to change a Kafka event schema.
+- About to change a DB schema.
+- About to touch the `.sdoc` format itself.
+- About to touch the gateway or any global filter.
+- About to add a dependency.
+
+## Naming Conventions (Fixed)
+
+- Services: `auth-service`, `document-service`, `sync-service`,
+  `asset-service`, `version-service`, `notification-service`,
+  `render-service`, `api-gateway`, `config-server`, `eureka-server`.
+- Java packages: `app.sdoc.<service>`.
+- Kafka topics: `sdoc.<domain>.<action>`.
+- TypeScript packages: `@sdoc/format`, `@sdoc/editor`, `@sdoc/viewer`,
+  `@sdoc/sdk`, `@sdoc/types`.
+
+## Communication with the Human
+
+- Speak Spanish (Colombia neutral) to the human.
+- Identifiers, logs, and code in English.
+- Comments in the language already used by the file (mostly Spanish).
+- Commit messages: Conventional Commits, no emojis, no AI mentions.
+- When in doubt, ASK before doing.
+
+## Read AGENTS.md for everything else.

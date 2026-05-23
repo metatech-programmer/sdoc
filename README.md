@@ -20,6 +20,20 @@ Hecho en Colombia, listo para el mundo.
 
 ---
 
+> ## 🤖 ¿Eres una IA / asistente de código?
+>
+> **Antes de tocar una sola línea, lee en este orden:**
+>
+> 1. [`AGENTS.md`](AGENTS.md) — contrato no negociable para IA.
+> 2. [`SPEC.md`](SPEC.md) — única fuente de verdad (7700+ líneas).
+> 3. [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) — estado actual del código vs. spec.
+> 4. [`docs/FORMAT_SPEC_INDEX.md`](docs/FORMAT_SPEC_INDEX.md) — índice rápido del formato `.sdoc`.
+> 5. [`docs/AI_TASK_PROTOCOL.md`](docs/AI_TASK_PROTOCOL.md) — protocolo de cambios.
+>
+> **No improvises. No asumas. Pregunta cuando dudes. Sin menciones a IA en código ni commits.**
+
+---
+
 ## Por qué Folio
 
 | | |

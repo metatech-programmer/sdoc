@@ -122,12 +122,12 @@ PRODUCT_HUNT*.md
 PRESS_KIT*.md
 START_HERE.md
 
-# Herramientas de asistente / IA / agentes
+# Herramientas de asistente / IA / agentes — caches y configs locales
+# NOTA: .cursorrules y .github/copilot-instructions.md SI van en el repo,
+# son las instrucciones publicas para asistentes de IA (ver AGENTS.md).
 .claude/
 .aider*
 .cursor/
-.cursorrules
-.github/copilot-instructions.md
 .cody/
 .continue/
 memory/
