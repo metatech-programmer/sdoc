@@ -20,7 +20,7 @@ hypersistenceUtils = "3.7.4"
 # Observability
 micrometerPrometheus = "1.13.1"
 opentelemetrySpringBoot = "2.4.0"
-logstashLogback = "7.4"
+logstashLogback = "9.0"
 
 # Code generation / Utilities
 mapstruct = "1.5.5.Final"
