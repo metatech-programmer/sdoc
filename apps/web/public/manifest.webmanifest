@@ -1,0 +1,20 @@
+{
+  "name": "Folio · Editor de Documentos",
+  "short_name": "Folio",
+  "description": "Editor colaborativo offline-first. Hecho en Colombia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF7",
+  "theme_color": "#0F172A",
+  "orientation": "portrait-primary",
+  "lang": "es-CO",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

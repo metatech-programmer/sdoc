@@ -1,0 +1,159 @@
+global:
+  registry: ghcr.io/sdoc-team/sdoc
+  imageTag: latest
+  imagePullPolicy: IfNotPresent
+  storageClass: standard
+
+# ─── Configuración por servicio ───────────────────────────────────────────────
+services:
+  configServer:
+    enabled: true
+    replicas: 1
+    port: 8888
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 512Mi }
+
+  eurekaServer:
+    enabled: true
+    replicas: 1
+    port: 8761
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 512Mi }
+
+  apiGateway:
+    enabled: true
+    replicas: 2
+    port: 8080
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { cpu: 1000m, memory: 1Gi }
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPU: 70
+
+  authService:
+    enabled: true
+    replicas: 2
+    port: 8081
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { cpu: 500m, memory: 1Gi }
+
+  documentService:
+    enabled: true
+    replicas: 2
+    port: 8082
+    resources:
+      requests: { cpu: 300m, memory: 512Mi }
+      limits: { cpu: 1000m, memory: 1Gi }
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 8
+      targetCPU: 70
+
+  assetService:
+    enabled: true
+    replicas: 2
+    port: 8083
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { cpu: 500m, memory: 1Gi }
+
+  versionService:
+    enabled: true
+    replicas: 1
+    port: 8084
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 512Mi }
+
+  syncService:
+    enabled: true
+    replicas: 2
+    port: 8085
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { cpu: 500m, memory: 1Gi }
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 6
+      targetCPU: 60
+
+  renderService:
+    enabled: true
+    replicas: 2
+    port: 8086
+    resources:
+      requests: { cpu: 500m, memory: 1Gi }
+      limits: { cpu: 2000m, memory: 2Gi }
+
+  notificationService:
+    enabled: true
+    replicas: 1
+    port: 8087
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 300m, memory: 512Mi }
+
+  web:
+    enabled: true
+    replicas: 2
+    port: 80
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { cpu: 200m, memory: 128Mi }
+
+# ─── Ingress ──────────────────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "150m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+  host: app.sdoc.app
+  tls:
+    enabled: true
+    secretName: sdoc-tls
+
+# ─── Secrets (se sobreescriben con Vault/External Secrets en prod) ─────────────
+secrets:
+  existingSecret: ""
+  vaultSecretPath: "secret/sdoc"
+
+# ─── NetworkPolicy ────────────────────────────────────────────────────────────
+networkPolicy:
+  enabled: true
+
+# ─── PodDisruptionBudget ──────────────────────────────────────────────────────
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# ─── Render Worker (Celery) con KEDA ─────────────────────────────────────────
+renderWorker:
+  replicas: 2
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits: { cpu: 2000m, memory: 4Gi }
+  keda:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 20
+    idleReplicaCount: 0
+    targetQueueLength: 5
+    cooldownPeriod: 60
+    pollingInterval: 15
+
+# ─── Redis (referenciado por KEDA TriggerAuthentication) ─────────────────────
+redis:
+  host: sdoc-redis
+  port: 6379
+  tls:
+    enabled: false

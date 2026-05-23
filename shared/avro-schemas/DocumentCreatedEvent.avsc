@@ -1,0 +1,82 @@
+{
+  "type": "record",
+  "name": "DocumentCreatedEvent",
+  "namespace": "app.sdoc.events",
+  "doc": "Evento emitido cuando se crea un nuevo documento en la plataforma.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID único del evento para deduplicación."
+    },
+    {
+      "name": "eventType",
+      "type": "string",
+      "default": "DOCUMENT_CREATED",
+      "doc": "Tipo de evento para enrutamiento en consumidores."
+    },
+    {
+      "name": "occurredAt",
+      "type": "string",
+      "doc": "Timestamp ISO-8601 de cuando ocurrió el evento."
+    },
+    {
+      "name": "documentId",
+      "type": "string",
+      "doc": "UUID del documento recién creado."
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "doc": "Título inicial del documento."
+    },
+    {
+      "name": "ownerId",
+      "type": "string",
+      "doc": "UUID del usuario propietario del documento."
+    },
+    {
+      "name": "ownerEmail",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Email del propietario para notificaciones."
+    },
+    {
+      "name": "tenantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "UUID de la organización (null para usuarios FREE sin org)."
+    },
+    {
+      "name": "language",
+      "type": {
+        "type": "enum",
+        "name": "Language",
+        "symbols": ["ES", "EN", "PT", "FR", "DE"]
+      },
+      "default": "ES",
+      "doc": "Idioma principal del documento para indexación full-text."
+    },
+    {
+      "name": "isPublic",
+      "type": "boolean",
+      "default": false,
+      "doc": "Si el documento es de acceso público."
+    },
+    {
+      "name": "tags",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Etiquetas asociadas al documento en el momento de creación."
+    },
+    {
+      "name": "correlationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID de correlación para tracing distribuido (X-Correlation-Id del request original)."
+    }
+  ]
+}

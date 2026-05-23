@@ -1,0 +1,96 @@
+groups:
+  - name: sdoc.availability
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Servicio caído: {{ $labels.job }}"
+          description: "El servicio {{ $labels.job }} lleva más de 2 minutos sin responder."
+          runbook: "https://docs.sdoc.app/runbooks/service-down"
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_server_requests_seconds_count[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta tasa de errores en {{ $labels.service }}"
+          description: "Más del 5% de requests retornan error 5xx en {{ $labels.service }}."
+
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_server_requests_seconds_bucket[5m])) by (le, service)
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta latencia en {{ $labels.service }}"
+          description: "P95 de latencia supera 2 segundos en {{ $labels.service }}."
+
+  - name: sdoc.circuit_breakers
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker abierto: {{ $labels.name }}"
+          description: "El circuit breaker {{ $labels.name }} está en estado OPEN."
+
+  - name: sdoc.kafka
+    rules:
+      - alert: KafkaConsumerLag
+        expr: kafka_consumer_lag_sum > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Consumer lag alto en Kafka"
+          description: "Consumer group {{ $labels.group }} tiene lag > 1000 mensajes."
+
+      - alert: OutboxEventsPending
+        expr: |
+          sum(pg_stat_user_tables_n_live_tup{relname="outbox_events"}) > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Muchos eventos pendientes en Outbox"
+          description: "Hay más de 100 eventos pendientes en la tabla outbox_events."
+
+  - name: sdoc.resources
+    rules:
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            jvm_memory_used_bytes{area="heap"}
+            /
+            jvm_memory_max_bytes{area="heap"}
+          ) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso de memoria JVM alto en {{ $labels.service }}"
+          description: "JVM heap usage supera el 85% en {{ $labels.service }}."
+
+      - alert: PostgresConnectionsHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Muchas conexiones activas a PostgreSQL"
+          description: "{{ $value }} conexiones activas en PostgreSQL."

@@ -1,0 +1,69 @@
+# ============================================================
+# Render.com · Blueprint para desplegar Folio (web + servicios backend)
+# Plan free para web + PostgreSQL gratis + Redis gratis.
+# ============================================================
+services:
+  # Frontend (Static Site — FREE tier)
+  - type: web
+    name: folio-web
+    runtime: static
+    rootDir: apps/web
+    buildCommand: npm install --workspaces --include-workspace-root && cd apps/web && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    envVars:
+      - key: VITE_API_URL
+        value: https://folio-api.onrender.com/api/v1
+      - key: VITE_WS_URL
+        value: wss://folio-api.onrender.com/ws/sync
+
+  # API Gateway (Web Service — FREE tier)
+  - type: web
+    name: folio-api
+    runtime: docker
+    dockerfilePath: ./infrastructure/docker/Dockerfile.gateway
+    dockerContext: .
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: 10000
+      - key: POSTGRES_URL
+        fromDatabase:
+          name: folio-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: folio-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+
+databases:
+  - name: folio-postgres
+    plan: free
+    databaseName: folio_db
+    user: folio
+    postgresMajorVersion: 16
+
+  - name: folio-redis
+    type: keyvalue
+    plan: free
+    ipAllowList: []

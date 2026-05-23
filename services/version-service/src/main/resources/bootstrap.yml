@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: version-service
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URI:http://config-server:8888}
+      username: ${CONFIG_SERVER_USER:config-admin}
+      password: ${CONFIG_SERVER_PASSWORD}
+      fail-fast: true

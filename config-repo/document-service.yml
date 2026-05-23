@@ -1,0 +1,51 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: document-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+# OPA
+opa:
+  url: http://${OPA_HOST:opa}:${OPA_PORT:8181}
+  policy-path: /v1/data/sdoc/documents/allow
+  limits-path: /v1/data/sdoc/limits
+
+# Cifrado
+sdoc:
+  encryption:
+    aes-key: ${DOCUMENT_ENCRYPTION_KEY}
+    ed25519-private-key: ${DOCUMENT_SIGNING_PRIVATE_KEY}
+
+# Resilience4j sobreescribe por instancia
+resilience4j:
+  circuitbreaker:
+    instances:
+      asset-service-client:
+        base-config: default
+        sliding-window-size: 20
+        failure-rate-threshold: 40
+        wait-duration-in-open-state: 20s
+      version-service-client:
+        base-config: default
+        failure-rate-threshold: 60
+
+  bulkhead:
+    instances:
+      asset-service-client:
+        max-concurrent-calls: 10
+        max-wait-duration: 50ms
+
+  timelimiter:
+    instances:
+      render-service-client:
+        timeout-duration: 60s
+      asset-service-client:
+        timeout-duration: 15s

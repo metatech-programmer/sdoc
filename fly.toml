@@ -1,0 +1,34 @@
+# ============================================================
+# Fly.io · Despliegue alternativo del API Gateway
+# Free tier: 3 shared-cpu-1x VMs, 3 GB volúmenes
+# ============================================================
+app = "folio-api"
+primary_region = "bog"   # Bogotá si está disponible; si no: mia (Miami)
+
+[build]
+  dockerfile = "infrastructure/docker/Dockerfile.gateway"
+
+[env]
+  SPRING_PROFILES_ACTIVE = "prod"
+  PORT = "8080"
+  JAVA_OPTS = "-XX:+UseG1GC -XX:MaxRAMPercentage=75 -Xshare:auto"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[[services.http_checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "60s"
+  method = "GET"
+  path = "/actuator/health"

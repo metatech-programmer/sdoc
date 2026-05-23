@@ -1,0 +1,82 @@
+{{- if .Values.renderWorker.keda.enabled }}
+# KEDA ScaledObject para el worker Celery del render-service.
+# Escala automáticamente basándose en el tamaño de la cola Redis del broker de Celery.
+# Requiere KEDA 2.x instalado en el cluster: https://keda.sh/docs/2.14/deploy/
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "sdoc.fullname" . }}-render-worker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: render-worker
+  annotations:
+    # Mantener un mínimo de réplicas para garantizar SLA de exportación
+    keda.sh/scaledobject-transfer-hpa: "false"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "sdoc.fullname" . }}-render-worker
+  # Tiempo de espera antes de escalar a cero tras inactividad
+  idleReplicaCount: {{ .Values.renderWorker.keda.idleReplicaCount | default 0 }}
+  minReplicaCount: {{ .Values.renderWorker.keda.minReplicas | default 1 }}
+  maxReplicaCount: {{ .Values.renderWorker.keda.maxReplicas | default 20 }}
+  # Tiempo de cooldown para evitar flapping
+  cooldownPeriod: {{ .Values.renderWorker.keda.cooldownPeriod | default 60 }}
+  pollingInterval: {{ .Values.renderWorker.keda.pollingInterval | default 15 }}
+  # Política de escalado: agresivo hacia arriba, conservador hacia abajo
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Pods
+              value: 4
+              periodSeconds: 60
+        scaleDown:
+          stabilizationWindowSeconds: 120
+          policies:
+            - type: Pods
+              value: 2
+              periodSeconds: 60
+  triggers:
+    # Trigger principal: tamaño de la cola Celery en Redis
+    - type: redis
+      metadata:
+        # La cola default de Celery en el broker Redis (db 1)
+        address: {{ .Values.redis.host }}:{{ .Values.redis.port | default 6379 }}
+        passwordFromEnv: REDIS_PASSWORD
+        listName: "celery"
+        listLength: "{{ .Values.renderWorker.keda.targetQueueLength | default 5 }}"
+        databaseIndex: "1"
+        enableTLS: "{{ .Values.redis.tls.enabled | default false }}"
+      authenticationRef:
+        name: {{ include "sdoc.fullname" . }}-redis-auth
+    # Trigger secundario: cola de prioridad alta (exportaciones urgentes)
+    - type: redis
+      metadata:
+        address: {{ .Values.redis.host }}:{{ .Values.redis.port | default 6379 }}
+        passwordFromEnv: REDIS_PASSWORD
+        listName: "celery.priority"
+        listLength: "1"
+        databaseIndex: "1"
+        enableTLS: "{{ .Values.redis.tls.enabled | default false }}"
+      authenticationRef:
+        name: {{ include "sdoc.fullname" . }}-redis-auth
+---
+# TriggerAuthentication para Redis — usa el mismo Secret que el render-worker Deployment
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "sdoc.fullname" . }}-redis-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: {{ include "sdoc.fullname" . }}-secrets
+      key: REDIS_PASSWORD
+{{- end }}

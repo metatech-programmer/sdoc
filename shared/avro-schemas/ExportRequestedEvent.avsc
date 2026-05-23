@@ -1,0 +1,100 @@
+{
+  "type": "record",
+  "name": "ExportRequestedEvent",
+  "namespace": "app.sdoc.events",
+  "doc": "Evento emitido cuando un usuario solicita exportar un documento. Inicia la Saga de exportación.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID único del evento para deduplicación."
+    },
+    {
+      "name": "eventType",
+      "type": "string",
+      "default": "EXPORT_REQUESTED",
+      "doc": "Tipo de evento para enrutamiento en consumidores."
+    },
+    {
+      "name": "occurredAt",
+      "type": "string",
+      "doc": "Timestamp ISO-8601 de cuando se solicitó la exportación."
+    },
+    {
+      "name": "exportId",
+      "type": "string",
+      "doc": "UUID único de esta solicitud de exportación (permite correlacionar con ExportCompletedEvent)."
+    },
+    {
+      "name": "documentId",
+      "type": "string",
+      "doc": "UUID del documento a exportar."
+    },
+    {
+      "name": "requestedBy",
+      "type": "string",
+      "doc": "UUID del usuario que solicita la exportación."
+    },
+    {
+      "name": "tenantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "UUID de la organización del solicitante."
+    },
+    {
+      "name": "format",
+      "type": {
+        "type": "enum",
+        "name": "ExportFormat",
+        "symbols": ["PDF", "DOCX", "HTML", "MARKDOWN"]
+      },
+      "doc": "Formato de salida solicitado."
+    },
+    {
+      "name": "options",
+      "type": {
+        "type": "record",
+        "name": "ExportOptions",
+        "fields": [
+          {
+            "name": "includeComments",
+            "type": "boolean",
+            "default": false,
+            "doc": "Incluir comentarios en el documento exportado."
+          },
+          {
+            "name": "includeRevisionHistory",
+            "type": "boolean",
+            "default": false,
+            "doc": "Incluir historial de revisiones."
+          },
+          {
+            "name": "pageSize",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Tamaño de página para PDF: A4, LETTER, etc."
+          },
+          {
+            "name": "locale",
+            "type": "string",
+            "default": "es",
+            "doc": "Locale para fechas y formatos en el documento exportado."
+          }
+        ]
+      },
+      "doc": "Opciones de personalización de la exportación."
+    },
+    {
+      "name": "callbackUrl",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "URL webhook para notificar cuando la exportación esté lista (opcional)."
+    },
+    {
+      "name": "correlationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID de correlación para tracing distribuido."
+    }
+  ]
+}

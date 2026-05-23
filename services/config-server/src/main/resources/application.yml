@@ -1,0 +1,76 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+
+  threads:
+    virtual:
+      enabled: true
+
+  security:
+    user:
+      name: ${CONFIG_SERVER_USER:config-admin}
+      password: ${CONFIG_SERVER_PASSWORD}
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_REPO_URI:file:///config-repo}
+          default-label: main
+          clone-on-start: true
+          refresh-rate: 30
+        encrypt:
+          enabled: true
+
+    # Vault como backend de secretos
+    vault:
+      host: ${VAULT_HOST:vault}
+      port: ${VAULT_PORT:8200}
+      scheme: http
+      authentication: TOKEN
+      token: ${VAULT_TOKEN}
+      kv:
+        enabled: true
+        default-context: sdoc
+        backend: secret
+
+  # Importar secretos de Vault para esta instancia
+  config:
+    import: "optional:vault://secret/sdoc/config-server"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka:8761/eureka/}
+    registry-fetch-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,refresh,busrefresh
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+# Clave de cifrado para propiedades {cipher} en los archivos de config
+encrypt:
+  key: ${CONFIG_ENCRYPT_KEY:changeme_32_char_key_here_pad}
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+    app.sdoc: INFO

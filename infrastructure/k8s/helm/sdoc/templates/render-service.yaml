@@ -1,0 +1,89 @@
+{{- if .Values.services.renderService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: render-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: render-service
+spec:
+  replicas: {{ .Values.services.renderService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: render-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: render-service
+        app.kubernetes.io/part-of: sdoc
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.services.renderService.port }}"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: render-service
+          image: {{ .Values.global.registry }}-render-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.renderService.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.renderService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+        # Worker Celery como sidecar
+        - name: render-worker
+          image: {{ .Values.global.registry }}-render-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=info", "--concurrency=4", "-Q", "exports,previews"]
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            requests: { cpu: 500m, memory: 1Gi }
+            limits: { cpu: 2000m, memory: 2Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: render-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: render-service
+  ports:
+    - port: {{ .Values.services.renderService.port }}
+      targetPort: http
+      name: http
+---
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: render-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: render-service
+{{- end }}
+{{- end }}

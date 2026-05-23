@@ -1,0 +1,116 @@
+{{- if .Values.services.documentService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: document-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: document-service
+spec:
+  replicas: {{ .Values.services.documentService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: document-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: document-service
+        app.kubernetes.io/part-of: sdoc
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.services.documentService.port }}"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: document-service
+          image: {{ .Values.global.registry }}-document-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.documentService.port }}
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: kubernetes
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.documentService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: document-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: document-service
+  ports:
+    - port: {{ .Values.services.documentService.port }}
+      targetPort: http
+      name: http
+---
+{{- if .Values.services.documentService.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: document-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: document-service
+  minReplicas: {{ .Values.services.documentService.hpa.minReplicas }}
+  maxReplicas: {{ .Values.services.documentService.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.services.documentService.hpa.targetCPU }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+{{- end }}
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: document-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: document-service
+{{- end }}
+{{- end }}

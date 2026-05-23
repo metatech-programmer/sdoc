@@ -1,0 +1,33 @@
+# Overrides para el entorno de staging
+global:
+  imagePullPolicy: Always
+
+services:
+  apiGateway:
+    replicas: 1
+    hpa:
+      enabled: false
+  documentService:
+    replicas: 1
+    hpa:
+      enabled: false
+  syncService:
+    replicas: 1
+    hpa:
+      enabled: false
+  renderService:
+    replicas: 1
+    resources:
+      requests: { cpu: 300m, memory: 512Mi }
+      limits: { cpu: 1000m, memory: 1Gi }
+
+ingress:
+  host: staging.sdoc.app
+  tls:
+    secretName: sdoc-staging-tls
+
+networkPolicy:
+  enabled: false
+
+pdb:
+  enabled: false

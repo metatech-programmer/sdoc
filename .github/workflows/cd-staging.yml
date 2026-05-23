@@ -1,0 +1,56 @@
+name: CD — Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/sdoc
+
+jobs:
+  deploy-staging:
+    name: Desplegar en Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      group: staging-deploy
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar kubeconfig
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+      - name: Instalar Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: "3.15.0"
+
+      - name: Deploy con Helm — staging
+        run: |
+          helm upgrade --install sdoc infrastructure/k8s/helm/sdoc \
+            --namespace sdoc-staging \
+            --create-namespace \
+            --values infrastructure/k8s/helm/sdoc/values-staging.yaml \
+            --set global.imageTag=sha-${{ github.sha }} \
+            --set global.registry=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }} \
+            --wait \
+            --timeout 10m
+
+      - name: Verificar despliegue
+        run: |
+          kubectl rollout status deployment -n sdoc-staging --timeout=5m
+          kubectl get pods -n sdoc-staging
+
+      - name: Notificar resultado
+        if: always()
+        run: |
+          echo "Deploy a staging: ${{ job.status }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Commit: ${{ github.event.head_commit.message }}"

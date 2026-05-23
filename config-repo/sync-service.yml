@@ -1,0 +1,19 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: sync-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+sdoc:
+  sync:
+    crdt-state-ttl-days: 7
+    max-sessions-per-document: 50
+    heartbeat-interval-ms: 30000

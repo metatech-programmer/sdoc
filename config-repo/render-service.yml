@@ -1,0 +1,92 @@
+# Configuración del render-service (Python FastAPI + Celery).
+# Leída por el Config Server de Spring Cloud y consumida por el cliente HTTP
+# de configuración del servicio Python al arrancar (app/config.py).
+server:
+  port: 8086
+
+spring:
+  application:
+    name: render-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: render-service
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+celery:
+  broker-url: redis://:${REDIS_PASSWORD}@${REDIS_HOST:redis}:${REDIS_PORT:6379}/1
+  result-backend: redis://:${REDIS_PASSWORD}@${REDIS_HOST:redis}:${REDIS_PORT:6379}/2
+  task-serializer: json
+  result-serializer: json
+  accept-content:
+    - json
+  timezone: UTC
+  worker:
+    max-tasks-per-child: 100
+    task-soft-time-limit: 270
+    task-time-limit: 300
+    concurrency: 4
+    prefetch-multiplier: 1
+
+minio:
+  endpoint: http://${MINIO_HOST:minio}:${MINIO_PORT:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  secure: false
+  buckets:
+    exports: sdoc-exports
+    assets: sdoc-assets
+    documents: sdoc-documents
+    versions: sdoc-versions
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    acks: all
+    retries: 3
+  topics:
+    export-requested: sdoc.exports.requested
+    export-completed: sdoc.exports.completed
+    export-failed: sdoc.exports.failed
+
+render:
+  # Conversión de documentos
+  pdf:
+    dpi: 150
+    page-size: A4
+    optimize-for-web: true
+  docx:
+    compatibility-mode: 15   # Word 2013+
+  html:
+    embed-images: true
+    minify: false
+  # OCR (requiere tesseract instalado en la imagen)
+  ocr:
+    enabled: true
+    languages:
+      - spa
+      - eng
+    confidence-threshold: 60.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    app.sdoc.render: DEBUG
+  format: json

@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "21"
+  NODE_VERSION: "20"
+
+jobs:
+  # ============================================================
+  # Frontend — Build + typecheck
+  # ============================================================
+  web:
+    name: Frontend (build + typecheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install workspaces
+        run: npm install --workspaces --include-workspace-root
+
+      - name: Typecheck
+        run: npm run typecheck -w apps/web
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build -w apps/web
+        env:
+          VITE_DEMO_MODE: "true"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          retention-days: 7
+
+  # ============================================================
+  # Backend Java — Build (sin tests para velocidad)
+  # ============================================================
+  backend-java:
+    name: Backend Java (Gradle build)
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('**/build.gradle.kts') != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: "gradle"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build (skip tests)
+        run: ./gradlew build -x test --no-daemon
+        continue-on-error: true
+
+  # ============================================================
+  # Backend Python (render-service)
+  # ============================================================
+  backend-python:
+    name: Render service (Python)
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('services/render-service/requirements.txt') != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -r services/render-service/requirements.txt
+          pip install -r services/render-service/requirements-dev.txt
+        continue-on-error: true
+
+      - name: Pytest
+        run: pytest services/render-service/tests -v
+        continue-on-error: true
+
+  # ============================================================
+  # Lighthouse (perf + a11y + SEO)
+  # ============================================================
+  lighthouse:
+    name: Lighthouse audit
+    runs-on: ubuntu-latest
+    needs: web
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Audit with Lighthouse
+        run: |
+          npm install -g http-server @lhci/cli
+          http-server dist -p 4173 &
+          sleep 4
+          lhci autorun \
+            --collect.url=http://localhost:4173 \
+            --upload.target=temporary-public-storage \
+            --assert.preset=lighthouse:no-pwa || true

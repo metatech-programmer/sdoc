@@ -1,0 +1,192 @@
+{
+  "id": "sdoc",
+  "realm": "sdoc",
+  "displayName": "SDOC Platform",
+  "displayNameHtml": "<b>SDOC</b> Platform",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "defaultSignatureAlgorithm": "RS256",
+
+  "roles": {
+    "realm": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "USER",
+        "description": "Usuario estándar de SDOC",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "sdoc"
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "ADMIN",
+        "description": "Administrador de la plataforma",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "sdoc"
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "ORG_OWNER",
+        "description": "Propietario de una organización",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "sdoc"
+      }
+    ]
+  },
+
+  "clients": [
+    {
+      "id": "00000000-0000-0000-0001-000000000001",
+      "clientId": "sdoc-web",
+      "name": "SDOC Web Application",
+      "description": "Cliente público para el frontend React",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "https://app.sdoc.app/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "https://app.sdoc.app"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://app.sdoc.app/*"
+      },
+      "protocolMappers": [
+        {
+          "id": "00000000-0000-0000-0002-000000000001",
+          "name": "organization_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "organization_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "organization_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000002",
+          "name": "plan",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "plan",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "plan",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000003",
+          "name": "realm_roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "multivalued": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000004",
+          "name": "full_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000005",
+          "name": "email_verified",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "emailVerified",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email_verified",
+            "jsonType.label": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0001-000000000002",
+      "clientId": "sdoc-backend",
+      "name": "SDOC Backend Services",
+      "description": "Cliente confidencial para microservicios",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "secret": "changeme_keycloak_client_secret",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"]
+    }
+  ],
+
+  "defaultRoles": ["USER"],
+
+  "requiredCredentials": ["password"],
+
+  "passwordPolicy": "length(8) and upperCase(1) and digits(1) and notUsername",
+
+  "emailTheme": "base",
+  "loginTheme": "base",
+  "accountTheme": "base",
+  "adminTheme": "base",
+
+  "internationalizationEnabled": true,
+  "supportedLocales": ["es", "en"],
+  "defaultLocale": "es",
+
+  "smtpServer": {}
+}

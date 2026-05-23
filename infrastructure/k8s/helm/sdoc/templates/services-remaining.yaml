@@ -1,0 +1,466 @@
+{{/*
+Plantilla genérica para los servicios restantes (sin HPA).
+Servicios cubiertos: config-server, eureka-server, auth-service,
+asset-service, version-service, sync-service, notification-service, web.
+*/}}
+
+{{/* ─── Config Server ─────────────────────────────────────────────────────── */}}
+{{- if .Values.services.configServer.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: config-server
+spec:
+  replicas: {{ .Values.services.configServer.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: config-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: config-server
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: config-server
+          image: {{ .Values.global.registry }}-config-server:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.configServer.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.configServer.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: config-server
+  ports:
+    - port: {{ .Values.services.configServer.port }}
+      targetPort: http
+{{- end }}
+
+{{/* ─── Eureka Server ──────────────────────────────────────────────────────── */}}
+{{- if .Values.services.eurekaServer.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eureka-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: eureka-server
+spec:
+  replicas: {{ .Values.services.eurekaServer.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: eureka-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: eureka-server
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: eureka-server
+          image: {{ .Values.global.registry }}-eureka-server:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.eurekaServer.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.eurekaServer.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-server
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: eureka-server
+  ports:
+    - port: {{ .Values.services.eurekaServer.port }}
+      targetPort: http
+{{- end }}
+
+{{/* ─── Auth Service ───────────────────────────────────────────────────────── */}}
+{{- if .Values.services.authService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: auth-service
+spec:
+  replicas: {{ .Values.services.authService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: auth-service
+        app.kubernetes.io/part-of: sdoc
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.services.authService.port }}"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: auth-service
+          image: {{ .Values.global.registry }}-auth-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.authService.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.authService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: auth-service
+  ports:
+    - port: {{ .Values.services.authService.port }}
+      targetPort: http
+{{- end }}
+
+{{/* ─── Asset Service ──────────────────────────────────────────────────────── */}}
+{{- if .Values.services.assetService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asset-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: asset-service
+spec:
+  replicas: {{ .Values.services.assetService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: asset-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: asset-service
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: asset-service
+          image: {{ .Values.global.registry }}-asset-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.assetService.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.assetService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: asset-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: asset-service
+  ports:
+    - port: {{ .Values.services.assetService.port }}
+      targetPort: http
+{{- end }}
+
+{{/* ─── Version Service ────────────────────────────────────────────────────── */}}
+{{- if .Values.services.versionService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: version-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: version-service
+spec:
+  replicas: {{ .Values.services.versionService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: version-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: version-service
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: version-service
+          image: {{ .Values.global.registry }}-version-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.versionService.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.versionService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: version-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: version-service
+  ports:
+    - port: {{ .Values.services.versionService.port }}
+      targetPort: http
+{{- end }}
+
+{{/* ─── Sync Service ───────────────────────────────────────────────────────── */}}
+{{- if .Values.services.syncService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sync-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: sync-service
+spec:
+  replicas: {{ .Values.services.syncService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sync-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sync-service
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: sync-service
+          image: {{ .Values.global.registry }}-sync-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.syncService.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.syncService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sync-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: sync-service
+  ports:
+    - port: {{ .Values.services.syncService.port }}
+      targetPort: http
+---
+{{- if .Values.services.syncService.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sync-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sync-service
+  minReplicas: {{ .Values.services.syncService.hpa.minReplicas }}
+  maxReplicas: {{ .Values.services.syncService.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.services.syncService.hpa.targetCPU }}
+{{- end }}
+{{- end }}
+
+{{/* ─── Notification Service ──────────────────────────────────────────────── */}}
+{{- if .Values.services.notificationService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: notification-service
+spec:
+  replicas: {{ .Values.services.notificationService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notification-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: notification-service
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: notification-service
+          image: {{ .Values.global.registry }}-notification-service:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.notificationService.port }}
+              name: http
+          envFrom:
+            - secretRef:
+                name: sdoc-secrets
+          resources:
+            {{- toYaml .Values.services.notificationService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: notification-service
+  ports:
+    - port: {{ .Values.services.notificationService.port }}
+      targetPort: http
+{{- end }}
+
+{{/* ─── Web (frontend) ─────────────────────────────────────────────────────── */}}
+{{- if .Values.services.web.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sdoc.labels" . | nindent 4 }}
+    app.kubernetes.io/name: web
+spec:
+  replicas: {{ .Values.services.web.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: web
+        app.kubernetes.io/part-of: sdoc
+    spec:
+      containers:
+        - name: web
+          image: {{ .Values.global.registry }}-web:{{ .Values.global.imageTag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            {{- toYaml .Values.services.web.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app.kubernetes.io/name: web
+  ports:
+    - port: 80
+      targetPort: http
+{{- end }}

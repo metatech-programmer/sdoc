@@ -1,0 +1,152 @@
+# ArgoCD Application para despliegue GitOps de SDOC Platform en producción.
+# Sincronización automática con self-healing activado.
+# Requiere ArgoCD 2.9+ instalado en el cluster de producción.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sdoc-platform-production
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: sdoc-platform
+    app.kubernetes.io/instance: production
+    environment: production
+  annotations:
+    # Notificaciones Slack cuando hay cambios de sincronización
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: sdoc-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: sdoc-alerts
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: sdoc-alerts
+  finalizers:
+    # Eliminar recursos del cluster al borrar esta Application
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sdoc-production
+
+  source:
+    # Repositorio con los manifiestos Helm del monorepo
+    repoURL: https://github.com/sdoc-team/sdoc-platform.git
+    targetRevision: main
+    path: infrastructure/k8s/helm/sdoc
+    helm:
+      # Valores de producción sobrescriben los defaults
+      valueFiles:
+        - values.yaml
+        - values-production.yaml
+      # Parámetros inyectados desde el pipeline CI (imagen específica por commit)
+      parameters:
+        - name: global.imageTag
+          value: "ARGOCD_APP_REVISION"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sdoc-production
+
+  syncPolicy:
+    automated:
+      # Sincronización automática cuando hay cambios en el repo
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      # Crear el namespace si no existe
+      - CreateNamespace=true
+      # Usar server-side apply para evitar conflictos con CRDs grandes
+      - ServerSideApply=true
+      # Respetar ignoreDifferences definidas abajo
+      - RespectIgnoreDifferences=true
+      # No fallar si hay recursos que no se pueden actualizar
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignorar campos gestionados por otros controladores (HPA, KEDA, etc.)
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /spec/metrics
+    - group: keda.sh
+      kind: ScaledObject
+      jsonPointers:
+        - /status
+
+  # Definición de health checks personalizados para tipos propios
+  info:
+    - name: "Entorno"
+      value: "Producción"
+    - name: "Equipo"
+      value: "SDOC Platform Team"
+    - name: "Documentación"
+      value: "https://docs.sdoc.app/ops/deployments"
+---
+# AppProject que agrupa las applications de producción y restringe permisos
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sdoc-production
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: sdoc-platform
+    environment: production
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Proyecto ArgoCD para SDOC Platform — entorno de producción"
+
+  # Solo este repo puede desplegar en este proyecto
+  sourceRepos:
+    - https://github.com/sdoc-team/sdoc-platform.git
+
+  # Solo el cluster local y el namespace de producción como destino
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: sdoc-production
+    - server: https://kubernetes.default.svc
+      namespace: sdoc-monitoring
+
+  # Restringir qué tipos de recursos pueden gestionarse
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: networking.k8s.io
+      kind: IngressClass
+
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  # Roles del proyecto — solo los SREs pueden sincronizar manualmente
+  roles:
+    - name: sre-admin
+      description: "Acceso completo para el equipo SRE"
+      policies:
+        - p, proj:sdoc-production:sre-admin, applications, *, sdoc-production/*, allow
+      groups:
+        - sdoc-sre-team
+    - name: developer-readonly
+      description: "Lectura para desarrolladores"
+      policies:
+        - p, proj:sdoc-production:developer-readonly, applications, get, sdoc-production/*, allow
+      groups:
+        - sdoc-dev-team
+
+  # Sincronización automática solo desde la rama main protegida
+  syncWindows:
+    - kind: allow
+      schedule: "0 6-22 * * 1-5"
+      duration: 16h
+      applications:
+        - sdoc-platform-production
+      manualSync: true

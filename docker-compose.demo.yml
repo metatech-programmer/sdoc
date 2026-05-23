@@ -1,0 +1,60 @@
+# ============================================================
+# Folio · Stack de demo mínimo (3 contenedores en vez de 23).
+# Solo lo que necesitas para ver la app funcionando localmente.
+# Uso: docker compose -f docker-compose.demo.yml up -d
+# ============================================================
+
+services:
+  # Frontend Folio (Vite preview) — http://localhost:3000
+  folio-web:
+    image: node:20-alpine
+    container_name: folio-web
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_DEMO_MODE=true
+      - HOST=0.0.0.0
+    command: sh -c "cd apps/web && npm install --prefix ../.. && npm run dev -- --host"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL para persistencia (opcional, no requerido por demo mode)
+  postgres:
+    image: postgres:16-alpine
+    container_name: folio-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: folio_db
+      POSTGRES_USER: folio
+      POSTGRES_PASSWORD: folio_demo_pw_change_me
+    volumes:
+      - folio_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U folio -d folio_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para sesiones (opcional)
+  redis:
+    image: redis:7.2-alpine
+    container_name: folio-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass folio_demo_pw_change_me
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "folio_demo_pw_change_me", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  folio_pg:

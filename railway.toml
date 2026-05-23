@@ -1,0 +1,23 @@
+# ============================================================
+# Railway · Despliegue del API Gateway de Folio (Spring Cloud Gateway)
+# Servicio único multi-puerto. Ajusta `startCommand` según tu monorepo.
+# ============================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infrastructure/docker/Dockerfile.gateway"
+
+[deploy]
+startCommand = "java -jar /app/app.jar --server.port=$PORT"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 100
+
+[[deploy.environmentVariables]]
+name = "SPRING_PROFILES_ACTIVE"
+value = "prod"
+
+[[deploy.environmentVariables]]
+name = "JAVA_OPTS"
+value = "-XX:+UseG1GC -XX:MaxRAMPercentage=75 -Xshare:auto"

@@ -1,0 +1,387 @@
+/* ============================================================
+   Folio · Premium Editorial Design System
+   Tokens, reset, base typography, accessibility, dark mode
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* === Brand === */
+  --folio-ink: #0F172A;          /* tinta principal */
+  --folio-paper: #FAFAF7;        /* papel crema */
+  --folio-amber: #F59E0B;        /* destacado cálido */
+  --folio-amber-soft: #FBBF24;
+  --folio-amber-deep: #B45309;
+
+  /* === Surfaces (Light) === */
+  --color-bg: #FAFAF7;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-subtle: #F4F4EE;
+  --color-bg-muted: #EFEFE7;
+
+  /* === Text (Light) === */
+  --color-text: #0F172A;
+  --color-text-soft: #334155;
+  --color-text-muted: #64748B;
+  --color-text-faint: #94A3B8;
+  --color-text-inverse: #FAFAF7;
+
+  /* === Borders === */
+  --color-border: #E5E5DC;
+  --color-border-strong: #D4D4C7;
+  --color-border-focus: #0F172A;
+
+  /* === Semantic === */
+  --color-primary: #0F172A;
+  --color-primary-hover: #1E293B;
+  --color-accent: #F59E0B;
+  --color-accent-hover: #D97706;
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-error: #DC2626;
+  --color-info: #2563EB;
+
+  /* === Type scale (Major Third 1.250) === */
+  --font-serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;     /* 12 */
+  --text-sm: 0.875rem;    /* 14 */
+  --text-base: 1rem;      /* 16 */
+  --text-lg: 1.125rem;    /* 18 */
+  --text-xl: 1.25rem;     /* 20 */
+  --text-2xl: 1.5rem;     /* 24 */
+  --text-3xl: 1.875rem;   /* 30 */
+  --text-4xl: 2.25rem;    /* 36 */
+  --text-5xl: 3rem;       /* 48 */
+  --text-6xl: 3.75rem;    /* 60 */
+  --text-7xl: 4.5rem;     /* 72 */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.75;
+
+  /* === Spacing === */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* === Radius === */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* === Shadows (editorial, soft) === */
+  --shadow-xs: 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-sm: 0 2px 6px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow: 0 4px 16px rgba(15,23,42,0.06), 0 2px 4px rgba(15,23,42,0.04);
+  --shadow-md: 0 10px 30px rgba(15,23,42,0.08), 0 4px 8px rgba(15,23,42,0.04);
+  --shadow-lg: 0 24px 60px rgba(15,23,42,0.12), 0 8px 16px rgba(15,23,42,0.06);
+  --shadow-ring: 0 0 0 3px rgba(245,158,11,0.18);
+
+  /* === Motion === */
+  --ease: cubic-bezier(0.22, 0.36, 0.0, 1);
+  --duration-fast: 120ms;
+  --duration: 180ms;
+  --duration-slow: 280ms;
+
+  /* === Layout === */
+  --container-prose: 68ch;
+  --container: 1200px;
+  --container-narrow: 880px;
+
+  /* === Z scale === */
+  --z-base: 1;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-modal: 50;
+  --z-toast: 90;
+  --z-tooltip: 100;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Dark mode (automatic + .dark override) === */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0B0E14;
+    --color-bg-elevated: #11151D;
+    --color-bg-subtle: #161B26;
+    --color-bg-muted: #1C222E;
+
+    --color-text: #F1F5F9;
+    --color-text-soft: #CBD5E1;
+    --color-text-muted: #94A3B8;
+    --color-text-faint: #64748B;
+    --color-text-inverse: #0F172A;
+
+    --color-border: #1F2937;
+    --color-border-strong: #334155;
+    --color-border-focus: #FBBF24;
+
+    --color-primary: #F1F5F9;
+    --color-primary-hover: #FFFFFF;
+    --color-accent: #FBBF24;
+    --color-accent-hover: #F59E0B;
+
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 4px 16px rgba(0,0,0,0.5);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.55);
+    --shadow-lg: 0 24px 60px rgba(0,0,0,0.6);
+  }
+}
+
+.dark {
+  color-scheme: dark;
+  --color-bg: #0B0E14;
+  --color-bg-elevated: #11151D;
+  --color-bg-subtle: #161B26;
+  --color-bg-muted: #1C222E;
+  --color-text: #F1F5F9;
+  --color-text-soft: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-text-faint: #64748B;
+  --color-text-inverse: #0F172A;
+  --color-border: #1F2937;
+  --color-border-strong: #334155;
+  --color-accent: #FBBF24;
+  --color-accent-hover: #F59E0B;
+}
+
+.light {
+  color-scheme: light;
+}
+
+/* === Reset & base === */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+  min-height: 100dvh;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0;
+}
+
+h1 { font-size: clamp(2.25rem, 5vw, var(--text-6xl)); }
+h2 { font-size: clamp(1.75rem, 4vw, var(--text-4xl)); }
+h3 { font-size: clamp(1.375rem, 3vw, var(--text-2xl)); }
+
+p { margin: 0; }
+
+a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: color var(--duration) var(--ease);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+img, svg, video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* === Focus rings (accessibility) === */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* === Selection === */
+::selection {
+  background: var(--folio-amber);
+  color: var(--folio-ink);
+}
+
+/* === Scrollbar === */
+@media (hover: hover) {
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-text-faint); }
+}
+
+/* === Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* === Utility primitives === */
+.folio-container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+.folio-container-narrow {
+  max-width: var(--container-narrow);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+.folio-prose {
+  max-width: var(--container-prose);
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+}
+
+.folio-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+}
+
+.folio-eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--color-accent);
+}
+
+/* === Skip link === */
+.folio-skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--space-4);
+  z-index: var(--z-tooltip);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: top var(--duration) var(--ease);
+}
+.folio-skip-link:focus { top: var(--space-4); }
+
+/* === Editor (TipTap) === */
+.ProseMirror {
+  outline: none;
+  min-height: 200px;
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+}
+
+.ProseMirror p { margin: 0 0 var(--space-4); }
+
+.ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
+  margin: var(--space-8) 0 var(--space-4);
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-text-faint);
+  font-style: italic;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Collaboration cursor */
+.collaboration-cursor__caret {
+  border-left: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+.collaboration-cursor__label {
+  border-radius: 4px 4px 4px 0;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: 1;
+  padding: 3px 6px;
+  position: absolute;
+  top: -1.6em;
+  user-select: none;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}

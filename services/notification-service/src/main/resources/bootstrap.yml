@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: notification-service
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URI:http://config-server:8888}
+      fail-fast: true
+      retry:
+        max-attempts: 6
+        initial-interval: 2000
+        multiplier: 1.5
+        max-interval: 10000
+    vault:
+      enabled: ${VAULT_ENABLED:true}
+      host: ${VAULT_HOST:vault}
+      port: ${VAULT_PORT:8200}
+      scheme: http
+      authentication: TOKEN
+      token: ${VAULT_TOKEN:root-token}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: sdoc
+        application-name: notification-service
+
+server:
+  port: 8087
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
