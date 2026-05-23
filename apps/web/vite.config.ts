@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: "autoUpdate",
+        injectRegister: "auto",
         includeAssets: ["favicon.svg", "logo.svg", "logo-wordmark.svg"],
         manifest: {
           name: "Folio · Editor de Documentos",
@@ -31,6 +32,9 @@ export default defineConfig(({ mode }) => {
         workbox: {
           navigateFallback: "/index.html",
           globPatterns: ["**/*.{js,css,html,svg,woff2}"],
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
@@ -42,6 +46,7 @@ export default defineConfig(({ mode }) => {
             },
           ],
         },
+        devOptions: { enabled: false },
       }),
     ],
     resolve: {

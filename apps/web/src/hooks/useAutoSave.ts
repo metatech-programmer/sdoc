@@ -12,7 +12,8 @@ const DEBOUNCE_MS = 3_000;
  * Al reconectar, sincroniza todos los borradores pendientes.
  */
 export function useAutoSave(documentId: string | undefined) {
-  const { markSaving, markSaved } = useDocumentStore();
+  // Usamos getState() directamente para no depender de referencias de método
+  // que cambian cada render (evita re-render loops).
   const isOnline = useOfflineStore((s) => s.isOnline);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const prevOnlineRef = useRef<boolean>(isOnline);
@@ -29,17 +30,17 @@ export function useAutoSave(documentId: string | undefined) {
           return;
         }
 
-        markSaving();
+        useDocumentStore.getState().markSaving();
         try {
           await documentsApi.update(documentId, content);
           await deleteDraft(documentId);
-          markSaved();
+          useDocumentStore.getState().markSaved();
         } catch {
           await saveDraft(documentId, content);
         }
       }, DEBOUNCE_MS);
     },
-    [documentId, isOnline, markSaving, markSaved]
+    [documentId, isOnline]
   );
 
   // Al reconectar, sincronizar borradores pendientes en IndexedDB

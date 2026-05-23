@@ -3,6 +3,7 @@ import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { useAuthStore } from "../stores/authStore";
 import { useDocumentStore } from "../stores/documentStore";
+import { isDemoMode } from "../services/demo";
 
 const WS_BASE = import.meta.env.VITE_WS_URL ?? "ws://localhost:8085";
 
@@ -28,41 +29,46 @@ interface YjsCollaboration {
 
 /**
  * Configura la colaboración Yjs+WebSocket para un documento.
- * Pasa el JWT en el query param ya que los browsers no permiten
- * headers personalizados en el handshake WebSocket.
- * Sincroniza el estado de awareness con el documentStore.
+ * En demo mode, retorna un Y.Doc local sin conectarse a WebSocket
+ * (evita errores NS_ERROR_CONNECTION_REFUSED cuando no hay backend).
  */
 export function useYjsCollaboration({
   documentId,
   enabled = true,
 }: UseYjsCollaborationOptions): YjsCollaboration {
-  const user = useAuthStore((s) => s.user);
+  const userId = useAuthStore((s) => s.user?.id);
+  const userName = useAuthStore((s) => s.user?.fullName);
   const token = useAuthStore((s) => s.accessToken);
-  const { addCollaborator, removeCollaborator, updateCollaboratorCursor, clearCollaborators } =
-    useDocumentStore();
   const providerRef = useRef<WebsocketProvider | null>(null);
   const ydocRef = useRef<Y.Doc>(new Y.Doc());
 
   const color = useMemo(() => randomColor(), []);
 
   useEffect(() => {
+    // En demo mode no intentamos conectar a Yjs WebSocket
+    if (isDemoMode()) return;
     if (!enabled || !token || !documentId) return;
 
     const ydoc = ydocRef.current;
     const wsUrl = `${WS_BASE}/ws/sync/${documentId}?token=${token}`;
 
-    const provider = new WebsocketProvider(wsUrl, documentId, ydoc, {
-      connect: true,
-    });
+    let provider: WebsocketProvider;
+    try {
+      provider = new WebsocketProvider(wsUrl, documentId, ydoc, {
+        connect: true,
+      });
+    } catch {
+      return;
+    }
 
-    // Estado de awareness: nombre y color del usuario actual
     provider.awareness.setLocalStateField("user", {
-      id: user?.id ?? "anon",
-      name: user?.fullName ?? "Usuario",
+      id: userId ?? "anon",
+      name: userName ?? "Usuario",
       color,
     });
 
-    // Sincronizar awareness remoto con el store
+    // Sincroniza awareness remoto con el store leyendo directamente el state
+    // (no desestructuramos métodos para evitar bucles de re-render).
     const onAwarenessChange = ({
       added,
       removed,
@@ -72,11 +78,12 @@ export function useYjsCollaboration({
       removed: number[];
     }) => {
       const states = provider.awareness.getStates();
+      const store = useDocumentStore.getState();
 
       added.forEach((clientId) => {
         const state = states.get(clientId);
-        if (state?.user && state.user.id !== (user?.id ?? "anon")) {
-          addCollaborator({
+        if (state?.user && state.user.id !== (userId ?? "anon")) {
+          store.addCollaborator({
             userId: state.user.id,
             name: state.user.name ?? "Usuario",
             color: state.user.color ?? "#60a5fa",
@@ -85,10 +92,9 @@ export function useYjsCollaboration({
       });
 
       removed.forEach((clientId) => {
-        // clientId no mapea directo a userId — usamos el campo user.id del estado previo
         states.forEach((state) => {
           if (state?.user?.clientId === clientId) {
-            removeCollaborator(state.user.id);
+            store.removeCollaborator(state.user.id);
           }
         });
       });
@@ -101,9 +107,9 @@ export function useYjsCollaboration({
       provider.awareness.off("change", onAwarenessChange);
       provider.destroy();
       providerRef.current = null;
-      clearCollaborators();
+      useDocumentStore.getState().clearCollaborators();
     };
-  }, [documentId, token, enabled, user, color, addCollaborator, removeCollaborator, clearCollaborators]);
+  }, [documentId, token, enabled, userId, userName, color]);
 
   return {
     ydoc: ydocRef.current,

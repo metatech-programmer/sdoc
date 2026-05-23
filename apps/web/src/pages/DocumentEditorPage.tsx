@@ -33,7 +33,11 @@ export default function DocumentEditorPage() {
   const locale = useLocaleStore((s) => s.locale);
   const isOnline = useOfflineStore((s) => s.isOnline);
 
-  const { setCurrentDocument, isDirty, isSaving, lastSavedAt, collaborators } = useDocumentStore();
+  // Selectores granulares (no desestructurar el store entero — causa loop infinito)
+  const isDirty = useDocumentStore((s) => s.isDirty);
+  const isSaving = useDocumentStore((s) => s.isSaving);
+  const lastSavedAt = useDocumentStore((s) => s.lastSavedAt);
+  const collaborators = useDocumentStore((s) => s.collaborators);
 
   const [zen, setZen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -56,13 +60,14 @@ export default function DocumentEditorPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents"] }),
   });
 
+  // Sincroniza el doc cargado con el store (usa getState para no depender del método).
   useEffect(() => {
     if (doc) {
-      setCurrentDocument(doc);
-      setTitle(doc.title || t("editor.untitled"));
+      useDocumentStore.getState().setCurrentDocument(doc);
+      setTitle(doc.title || "Sin título");
     }
-    return () => setCurrentDocument(null);
-  }, [doc, setCurrentDocument, t]);
+    return () => useDocumentStore.getState().setCurrentDocument(null);
+  }, [doc]);
 
   useEffect(() => {
     function close(e: MouseEvent) {
