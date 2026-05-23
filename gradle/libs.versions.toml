@@ -28,7 +28,7 @@ lombok = "1.18.32"
 
 # MinIO
 minio = "8.5.10"
-thumbnailator = "0.4.20"
+thumbnailator = "0.4.21"
 springdocOpenapi = "2.5.0"
 unleash = "9.2.0"
 
