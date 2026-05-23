@@ -36,7 +36,7 @@ jobs:
           fi
 
       - name: Configurar kubeconfig
-        uses: azure/k8s-set-context@v3
+        uses: azure/k8s-set-context@v5
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
