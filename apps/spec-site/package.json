@@ -1,0 +1,15 @@
+{
+  "name": "@sdoc/spec-site",
+  "version": "1.0.0",
+  "description": "Sitio estático con la especificación pública del formato .sdoc. Desplegado en GitHub Pages.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "node -e \"console.log('Servidor estático en http://localhost:4173 — abre /dist/index.html'); require('http').createServer((req, res) => { const fs = require('fs'); const path = require('path'); const p = path.join('dist', req.url === '/' ? 'index.html' : req.url); fs.readFile(p, (err, data) => { if (err) { res.writeHead(404); res.end(); } else { const ext = path.extname(p); const ct = ext === '.html' ? 'text/html' : ext === '.css' ? 'text/css' : ext === '.json' ? 'application/json' : ext === '.md' ? 'text/markdown' : 'application/octet-stream'; res.writeHead(200, { 'Content-Type': ct + '; charset=utf-8' }); res.end(data); } }); }).listen(4173);\"",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

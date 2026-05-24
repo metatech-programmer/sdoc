@@ -4,9 +4,9 @@ import { documentsApi, exportApi } from "../services/api";
 import {
   buildSdocFromEditor,
   downloadSdoc,
-  openSdocFromDisk,
   sdocDocumentToTiptap,
 } from "../services/sdoc-file";
+import type { SdocFile } from "@sdoc/format";
 import { useAuthStore } from "../stores/authStore";
 import { useDocumentStore } from "../stores/documentStore";
 import { useYjsCollaboration } from "../hooks/useYjsCollaboration";
@@ -177,34 +177,67 @@ export default function DocumentEditorPage() {
   /**
    * Abre un .sdoc desde disco y crea un documento nuevo con su contenido.
    *
-   * Si el archivo trae `crdtState` (estado Yjs binario), lo aplicamos al
-   * `ydoc` actual para preservar el historial CRDT del autor original.
+   * Estrategia:
+   *   1. Abre file picker para obtener el File del usuario.
+   *   2. Intenta subirlo al backend (`POST /documents/import.sdoc`), que
+   *      valida estructura + checksums server-side y crea el documento.
+   *   3. Si el backend no responde (offline / demo), parsea client-side
+   *      con `@sdoc/format` y usa el flujo create + update.
+   *   4. Si el .sdoc trae `crdtState` Yjs, lo aplica al ydoc actual.
    */
   async function handleOpenSdoc() {
     setExportOpen(false);
     try {
-      const sdoc = await openSdocFromDisk();
-      if (!sdoc) return;
-      const tiptap = sdocDocumentToTiptap(sdoc.document);
-      const newDoc = await documentsApi.create({
-        title: sdoc.manifest.title || "Importado desde .sdoc",
-        description: sdoc.manifest.description,
-        language: sdoc.manifest.meta?.language ?? "es",
-      });
-      await documentsApi.update(newDoc.id, tiptap);
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".sdoc,application/zip,application/vnd.sdoc+zip,application/octet-stream";
+      fileInput.click();
 
-      // Si el .sdoc traía estado CRDT, lo aplicamos al ydoc del editor.
-      if (sdoc.crdtState && sdoc.crdtState.byteLength > 0 && ydoc) {
+      const file: File | undefined = await new Promise((resolve) => {
+        fileInput.addEventListener("change", () => resolve(fileInput.files?.[0] ?? undefined));
+      });
+      if (!file) return;
+
+      // 1. Intentar backend
+      let newDoc = await documentsApi.importSdocFile(file);
+
+      // 2. Fallback client-side
+      let parsedSdoc: SdocFile | null = null;
+      if (!newDoc) {
+        // Re-parsear los bytes en cliente (el file ya lo tenemos)
+        const buf = await file.arrayBuffer();
+        const { parseSdoc } = await import("@sdoc/format");
+        parsedSdoc = await parseSdoc(new Uint8Array(buf));
+        const tiptap = sdocDocumentToTiptap(parsedSdoc.document);
+        newDoc = await documentsApi.create({
+          title: parsedSdoc.manifest.title || "Importado desde .sdoc",
+          description: parsedSdoc.manifest.description,
+          language: parsedSdoc.manifest.meta?.language ?? "es",
+        });
+        await documentsApi.update(newDoc.id, tiptap);
+      } else {
+        // Parsear aparte solo para extraer el crdtState (si existe)
+        try {
+          const buf = await file.arrayBuffer();
+          const { parseSdoc } = await import("@sdoc/format");
+          parsedSdoc = await parseSdoc(new Uint8Array(buf));
+        } catch {
+          parsedSdoc = null;
+        }
+      }
+
+      // 3. Restaurar CRDT si vino
+      if (parsedSdoc?.crdtState && parsedSdoc.crdtState.byteLength > 0 && ydoc) {
         try {
           const Y = await import("yjs");
-          Y.applyUpdate(ydoc, sdoc.crdtState);
+          Y.applyUpdate(ydoc, parsedSdoc.crdtState);
         } catch {
-          // Si falla el merge CRDT, igual mantenemos el contenido importado.
+          // El contenido principal ya está, no pasa nada.
         }
       }
 
       queryClient.invalidateQueries({ queryKey: ["documents"] });
-      toast.success(`Importado: ${sdoc.manifest.title}`);
+      toast.success(`Importado: ${newDoc.title}`);
       navigate(`/app/documents/${newDoc.id}`);
     } catch (e) {
       console.error(e);

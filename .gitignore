@@ -106,6 +106,9 @@ temp/
 *.timestamp-*.mjs
 .vite/
 
+# Spec site build output (lo genera GitHub Actions)
+apps/spec-site/dist/
+
 # Monitoring data (solo en desarrollo)
 infrastructure/docker/volumes/
 

@@ -4,6 +4,7 @@
  * Fallback a modo demo si el backend no responde (VITE_DEMO_MODE o detección automática).
  */
 import axios, { type AxiosInstance, type AxiosResponse } from "axios";
+import type { Document } from "@sdoc/types";
 import { useAuthStore } from "../stores/authStore";
 import { DEMO_USER, DEMO_DOCS, isDemoMode, setDemoMode } from "./demo";
 
@@ -250,6 +251,28 @@ export const documentsApi = {
         headers: { Accept: "application/vnd.sdoc+zip" },
       });
       return res.data as ArrayBuffer;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Importa un archivo `.sdoc` subiéndolo al backend
+   * (`POST /documents/import.sdoc`). El backend valida estructura +
+   * checksums y crea un documento nuevo propiedad del usuario autenticado.
+   *
+   * Devuelve null en demo mode o si el backend falla — el caller debe
+   * caer a la versión cliente con `@sdoc/format`.
+   */
+  importSdocFile: async (file: File): Promise<Document | null> => {
+    if (isDemoMode()) return null;
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await api.post("/documents/import.sdoc", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data as Document;
     } catch {
       return null;
     }

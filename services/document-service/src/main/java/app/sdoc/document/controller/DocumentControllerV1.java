@@ -4,8 +4,11 @@ import app.sdoc.document.domain.dto.CreateDocumentRequest;
 import app.sdoc.document.domain.dto.DocumentResponse;
 import app.sdoc.document.domain.entity.Document;
 import app.sdoc.document.sdoc.SdocFileBuilder;
+import app.sdoc.document.sdoc.SdocFileReader;
+import app.sdoc.document.sdoc.SdocImportService;
 import app.sdoc.document.service.DocumentQueryService;
 import app.sdoc.document.service.DocumentService;
+import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +35,7 @@ public class DocumentControllerV1 {
     private final DocumentService documentService;
     private final DocumentQueryService documentQueryService;
     private final SdocFileBuilder sdocFileBuilder;
+    private final SdocImportService sdocImportService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -120,6 +124,44 @@ public class DocumentControllerV1 {
         headers.setCacheControl("no-store");
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
+
+    /**
+     * Importa un archivo `.sdoc` subido por el usuario y crea un documento
+     * nuevo. El owner es siempre el usuario autenticado (no el declarado
+     * en el manifest, para prevenir impersonación).
+     *
+     * Espera `multipart/form-data` con un campo `file` que contenga el .sdoc.
+     */
+    @PostMapping(value = "/import.sdoc", consumes = "multipart/form-data")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Importar un archivo .sdoc y crear un documento nuevo")
+    public ResponseEntity<DocumentResponse> importSdoc(@RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new SdocFileReader.SdocReadException("Archivo .sdoc vacío o no enviado", "empty");
+        }
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (java.io.IOException e) {
+            throw new SdocFileReader.SdocReadException("No se pudieron leer los bytes del archivo", "internal", e);
+        }
+        DocumentResponse created = sdocImportService.importBytes(bytes);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * Manejador de errores específico para problemas al leer .sdoc.
+     * Devuelve 400 con el código de error para que el frontend pueda
+     * mostrar un mensaje útil al usuario.
+     */
+    @ExceptionHandler(SdocFileReader.SdocReadException.class)
+    public ResponseEntity<Map<String, Object>> handleSdocReadError(SdocFileReader.SdocReadException ex) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "error", "sdoc_read_failed",
+            "code", ex.code,
+            "message", ex.getMessage()
+        ));
     }
 
     /** Quita caracteres inválidos para nombres de archivo en Windows/Linux/Mac. */
