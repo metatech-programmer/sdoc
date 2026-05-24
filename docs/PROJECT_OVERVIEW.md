@@ -161,14 +161,15 @@ sdoc-platform/
 | Pieza | Estado | Crítico |
 |---|---|---|
 | `SPEC.md` §6 (especificación del formato) | ✅ Documentada en spec | — |
-| JSON Schemas (`manifest.v1.json`, `document.v1.json`, etc.) | ❌ No existen | **SÍ** |
-| `packages/sdoc-format` (lib TS read/write/validate) | ❌ Vacío / sin implementar | **SÍ** |
-| `packages/sdoc-editor` (editor embebible) | ❌ No existe | Medio |
-| `packages/sdoc-viewer` (viewer embebible) | ❌ No existe | Medio |
-| `packages/sdoc-sdk` (SDK público) | ❌ No existe | Bajo (fase futura) |
-| CLI `sdoc` (validate/info/pack/extract) | ❌ No existe | Medio |
-| Validador online | ❌ No existe | Bajo |
-| Archivos `.sdoc` de ejemplo | ❌ No existen | **SÍ** |
+| JSON Schemas (manifest, document, acl, signature, encryption-meta) | ✅ 5 schemas v1 en `packages/sdoc-format/src/schemas/` | — |
+| `packages/sdoc-format` (lib TS read/write/validate) | ✅ Implementado, 37/37 tests pasan, build ESM+CJS+DTS | — |
+| Crypto: Ed25519 firma + AES-256-GCM + HKDF-SHA256 + PBKDF2 | ✅ Implementado con Web Crypto API nativa | — |
+| CLI `sdoc` (init/info/validate/extract/pack/sign/verify/keygen) | ✅ Implementado, bin publicado | — |
+| Archivos `.sdoc` de ejemplo (simple, signed, encrypted) | ✅ 3 ejemplos en `packages/sdoc-format/examples/` | — |
+| `packages/sdoc-editor` (editor embebible standalone) | ❌ No existe (el editor de `apps/web` cumple por ahora) | Bajo |
+| `packages/sdoc-viewer` (viewer embebible) | ❌ No existe | Bajo |
+| `packages/sdoc-sdk` (SDK público con API REST) | ❌ No existe | Bajo (fase futura) |
+| Validador online (sitio web) | ❌ No existe | Bajo |
 
 ### Infraestructura
 
@@ -210,41 +211,34 @@ sdoc-platform/
 
 Estos son los gaps reales que separan el estado actual de la visión completa:
 
-### GAP 1 — Implementación del formato `.sdoc` (CRÍTICO)
+### GAP 1 — ~~Implementación del formato `.sdoc`~~ RESUELTO
 
-**Spec:** §6 define el formato como ZIP con manifest.json, content/, assets/,
-revisions/, sync/, permissions/, security/, preview/.
+`packages/sdoc-format` está implementado al 100% según SPEC.md §6 y §9.3:
 
-**Realidad:** No existe una librería que lea/escriba archivos `.sdoc` reales.
-El "documento" hoy es un objeto JSON en PostgreSQL servido por
-`document-service`. El **archivo `.sdoc`** como tal **no se materializa nunca**.
+- 5 JSON Schemas (manifest, document, acl, signature, encryption-meta).
+- Lib TypeScript con `createSdoc`, `parseSdoc`, `serializeSdoc`, `validateSdocFile`.
+- Crypto completa: Ed25519 (sign/verify/keygen), AES-256-GCM + HKDF-SHA256
+  (encrypt/decrypt), PBKDF2 (password → masterKey).
+- Canonicalización JSON (RFC 8785-lite) para checksums reproducibles.
+- CLI `sdoc` (init, info, validate, extract, pack, sign, verify, keygen).
+- 3 archivos `.sdoc` de ejemplo en `examples/` (simple, signed, encrypted).
+- 37/37 tests Vitest pasan.
+- Build: ESM + CJS + DTS, listo para publicar en npm.
 
-**Implicación:** El proyecto **todavía no entrega su promesa principal**. Es
-una plataforma SaaS, no un nuevo formato de archivo.
+El proyecto YA entrega su promesa central: existe un formato `.sdoc` real,
+abierto, firmable y cifrable, con implementación de referencia funcional.
 
-**Trabajo pendiente:**
-- JSON Schemas (`schemas/manifest.v1.json`, etc.) en `packages/sdoc-format/schemas/`.
-- Implementación TypeScript de:
-  - `parseSdoc(buffer): SdocDocument` — descomprime ZIP, valida manifest,
-    devuelve estructura.
-  - `serializeSdoc(doc): Blob` — empaqueta a ZIP `.sdoc`.
-  - `validate(doc): ValidationResult` — verifica contra JSON Schema.
-  - `sign(doc, privateKey): SignedSdoc` — Ed25519.
-  - `verify(doc, publicKey): boolean` — verifica firma.
-  - `encrypt(doc, password): EncryptedSdoc` — AES-256-GCM + HKDF-SHA256.
-  - `decrypt(doc, password): SdocDocument`.
-- CLI `sdoc` (Node) con comandos: `validate`, `info`, `pack`, `extract`, `sign`.
-- Archivos `.sdoc` de ejemplo en `packages/sdoc-format/examples/`.
+### GAP 2 — ~~Editor importa/exporta `.sdoc`~~ RESUELTO
 
-### GAP 2 — Editor importa/exporta `.sdoc`
+`apps/web/src/services/sdoc-file.ts` integra `@sdoc/format` con:
 
-**Spec:** El editor debe poder abrir un `.sdoc` desde disco y guardarlo de vuelta.
+- `openSdocFromDisk()` — file picker → parsea y devuelve `SdocFile`.
+- `downloadSdoc(file)` — serializa y dispara descarga del navegador.
+- `tiptapToSdocDocument()` / `sdocDocumentToTiptap()` — conversiones bidireccionales.
+- `buildSdocFromEditor()` — helper de alto nivel.
 
-**Realidad:** El editor hoy solo lee/escribe contra el API REST. No maneja
-archivos locales.
-
-**Trabajo pendiente:** integrar `packages/sdoc-format` en `apps/web` con
-acciones "Abrir .sdoc", "Descargar como .sdoc".
+El menú "Exportar" del editor ahora ofrece `.sdoc` (nativo, formato propio)
+además de PDF/DOCX/HTML, y un comando "Abrir .sdoc…" para importar.
 
 ### GAP 3 — ~~Rebrand "Folio" no autorizado por spec~~ RESUELTO
 
@@ -282,26 +276,27 @@ no "formato". **Debería pivotar a vender el formato `.sdoc`.**
 
 ## 5. Próximos Pasos Sugeridos (al humano)
 
-Orden recomendado según `SPEC.md`:
+Con Gaps 1 y 2 resueltos, los siguientes pasos según prioridad:
 
-1. **Implementar `packages/sdoc-format`** completo (Gap 1, prioridad #1).
-   Hasta que esto exista, el proyecto no cumple su promesa central de "ser
-   un nuevo formato de archivo". Incluye JSON Schemas, lib TS
-   read/write/validate, crypto (Ed25519 + AES-256-GCM + HKDF-SHA256).
-2. **Crear archivos `.sdoc` de ejemplo** en `packages/sdoc-format/examples/`
-   y subirlos al repo.
-3. **CLI `sdoc`** (Node) con comandos `validate`, `info`, `pack`, `extract`,
-   `sign`.
-4. **Conectar editor con el formato** (Gap 2): integrar
-   `packages/sdoc-format` en `apps/web` con acciones "Abrir .sdoc" y
-   "Descargar como .sdoc".
-5. **Crear sitio público de la spec** (puede ser `apps/spec-site` o publicar
-   `SPEC.md` en GitHub Pages).
-6. **Validar el flujo end-to-end:** crear documento en editor → exportar como
-   `.sdoc` → cerrar → reabrir desde disco → debe verse igual.
+1. **Publicar `@sdoc/format` en npm** para que terceros puedan usarlo
+   (`npm publish` desde `packages/sdoc-format/`).
+2. **Sitio público de la spec** (GitHub Pages): publicar `SPEC.md` + los
+   JSON Schemas en una URL canónica tipo `https://sdoc.app/schemas/...`.
+3. **Backend: que `document-service` exporte/importe `.sdoc` real** además
+   del JSON actual. Endpoint `GET /documents/:id/download.sdoc`.
+4. **Render service: que cuando se exporte a PDF/DOCX/HTML, también pueda
+   exportar a `.sdoc` con firma del owner** (usa la clave Ed25519 de Vault).
+5. **`packages/sdoc-viewer`**: viewer embebible read-only basado en
+   `@sdoc/format` + tipografía/maquetación. Útil para mostrar `.sdoc`
+   en blogs, emails, otros productos.
+6. **Validar el flujo end-to-end manualmente:** crear documento en editor →
+   exportar como `.sdoc` → cerrar pestaña → abrir el `.sdoc` desde disco
+   → debe verse idéntico, con la firma del autor.
+7. **Integración CRDT real:** que `serializeSdoc` incluya el `crdtState`
+   binario de Yjs, y `parseSdoc` lo restaure al abrir.
 
 Estos pasos están alineados con `SPEC.md` §6, §7.4 (render-service para
-exports), §9.5–9.6 (crypto), y §21 (roadmap).
+exports), §9.3 (crypto), y §21 (roadmap fase 3+).
 
 Después de esto, retomar el roadmap original de la spec (Fases 4, 5).
 

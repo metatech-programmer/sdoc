@@ -1,110 +1,52 @@
 /**
- * Librería del formato .sdoc
- * Un archivo .sdoc es un ZIP que contiene:
- *   - content.json  → documento ProseMirror serializado
- *   - metadata.json → metadatos (id, title, version, language, tags…)
- *   - assets/       → archivos embebidos opcionales
- *   - crdt.bin      → estado Yjs serializado (opcional)
+ * @sdoc/format — Librería oficial del formato .sdoc.
+ *
+ * Implementa SPEC.md §6 (formato) y §9.3 (cifrado + firma).
+ *
+ * API principal:
+ *  - `createSdoc(input)`       → crea un SdocFile vacío.
+ *  - `serializeSdoc(file)`     → bytes listos para escribir/descargar.
+ *  - `parseSdoc(bytes)`        → lee un .sdoc y devuelve SdocFile validado.
+ *  - `signSdoc(...)`           → firma Ed25519.
+ *  - `verifySdocSignature(...)` → verifica firma.
+ *  - `encryptSdoc(...)` / `decryptSdoc(...)` → cifrado AES-256-GCM + HKDF.
+ *  - `validateSdocFile(file)`  → valida contra JSON Schemas + checksums.
+ *
+ * Toda crypto usa Web Crypto API nativa (Node 20+ o navegador moderno).
  */
-import { zipSync, unzipSync, strToU8, strFromU8 } from "fflate";
 
-export interface SdocMetadata {
-  id: string;
-  title: string;
-  version: number;
-  language: string;
-  tags: string[];
-  ownerId: string;
-  organizationId?: string;
-  createdAt: string;
-  updatedAt: string;
-  sdocVersion: "1.0";
-}
+export * from "./types.js";
+export * from "./core.js";
+export * from "./validator.js";
 
-export interface SdocDocument {
-  metadata: SdocMetadata;
-  content: unknown;
-  crdtState?: Uint8Array;
-  assets?: Record<string, Uint8Array>;
-}
+// Crypto submódulos expuestos para uso avanzado
+export * as ed25519 from "./crypto/ed25519.js";
+export * as aesGcm from "./crypto/aes-gcm.js";
 
-/**
- * Serializa un SdocDocument a bytes de archivo .sdoc (ZIP).
- */
-export function serialize(doc: SdocDocument): Uint8Array {
-  const files: Record<string, Uint8Array> = {
-    "content.json": strToU8(JSON.stringify(doc.content)),
-    "metadata.json": strToU8(JSON.stringify(doc.metadata)),
-  };
+// Utilidades
+export { ulid, documentId, userId, isUlid } from "./utils/ulid.js";
+export { canonicalize, canonicalChecksum } from "./utils/canonical.js";
+export {
+  sha256,
+  sha256Hex,
+  bytesToHex,
+  hexToBytes,
+  bytesToBase64,
+  base64ToBytes,
+  timingSafeEqual,
+} from "./utils/hash.js";
 
-  if (doc.crdtState) {
-    files["crdt.bin"] = doc.crdtState;
-  }
+// Schemas (re-export para consumidores que quieran usarlos directamente)
+import manifestSchema from "./schemas/manifest.v1.json" with { type: "json" };
+import documentSchema from "./schemas/document.v1.json" with { type: "json" };
+import aclSchema from "./schemas/acl.v1.json" with { type: "json" };
+import signatureSchema from "./schemas/signature.v1.json" with { type: "json" };
+import encryptionMetaSchema from "./schemas/encryption-meta.v1.json" with { type: "json" };
 
-  if (doc.assets) {
-    for (const [name, data] of Object.entries(doc.assets)) {
-      files[`assets/${name}`] = data;
-    }
-  }
-
-  return zipSync(files, { level: 6 });
-}
-
-/**
- * Deserializa bytes de un archivo .sdoc a SdocDocument.
- */
-export function deserialize(data: Uint8Array): SdocDocument {
-  const files = unzipSync(data);
-
-  const contentRaw = files["content.json"];
-  const metadataRaw = files["metadata.json"];
-
-  if (!contentRaw || !metadataRaw) {
-    throw new Error("Archivo .sdoc inválido: faltan content.json o metadata.json");
-  }
-
-  const content = JSON.parse(strFromU8(contentRaw));
-  const metadata: SdocMetadata = JSON.parse(strFromU8(metadataRaw));
-
-  const crdtState = files["crdt.bin"];
-
-  const assets: Record<string, Uint8Array> = {};
-  for (const [path, fileData] of Object.entries(files)) {
-    if (path.startsWith("assets/")) {
-      assets[path.replace("assets/", "")] = fileData;
-    }
-  }
-
-  return {
-    metadata,
-    content,
-    crdtState,
-    assets: Object.keys(assets).length > 0 ? assets : undefined,
-  };
-}
-
-/**
- * Crea metadatos vacíos para un nuevo documento.
- */
-export function createMetadata(
-  params: Pick<SdocMetadata, "id" | "title" | "language" | "ownerId"> &
-    Partial<SdocMetadata>
-): SdocMetadata {
-  const now = new Date().toISOString();
-  return {
-    version: 1,
-    tags: [],
-    createdAt: now,
-    updatedAt: now,
-    sdocVersion: "1.0",
-    ...params,
-  };
-}
-
-/**
- * Documento ProseMirror vacío compatible con TipTap.
- */
-export const EMPTY_DOCUMENT = {
-  type: "doc",
-  content: [{ type: "paragraph" }],
+export const schemas = {
+  manifest: manifestSchema,
+  document: documentSchema,
+  acl: aclSchema,
+  signature: signatureSchema,
+  encryptionMeta: encryptionMetaSchema,
 } as const;

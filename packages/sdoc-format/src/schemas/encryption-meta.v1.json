@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sdoc.app/schemas/encryption-meta/v1.json",
+  "title": "SDOC Encryption Metadata v1",
+  "description": "Metadata for encrypted .sdoc files. NEVER contains keys.",
+  "type": "object",
+  "required": ["algorithm", "keyDerivation", "iv", "encryptedAt", "encryptedFiles"],
+  "additionalProperties": false,
+  "properties": {
+    "algorithm": { "const": "AES-256-GCM" },
+    "keyDerivation": {
+      "type": "object",
+      "required": ["function", "salt", "info"],
+      "properties": {
+        "function": { "const": "HKDF-SHA256" },
+        "salt": {
+          "type": "string",
+          "description": "Base64 of the HKDF salt (16 bytes recommended).",
+          "pattern": "^[A-Za-z0-9+/]+=*$"
+        },
+        "info": {
+          "type": "string",
+          "description": "HKDF info string. Must follow 'sdoc-v1:document:<id>:<hex(iv)>' pattern."
+        }
+      },
+      "additionalProperties": false
+    },
+    "iv": {
+      "type": "string",
+      "description": "Base64 of the 12-byte AES-GCM IV.",
+      "pattern": "^[A-Za-z0-9+/]+=*$"
+    },
+    "aad": {
+      "type": "string",
+      "description": "Optional additional authenticated data, base64-encoded."
+    },
+    "encryptedAt": { "type": "string", "format": "date-time" },
+    "encryptedFiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Paths inside the ZIP that are encrypted (the rest are plaintext)."
+    },
+    "plaintextChecksum": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 (hex) of the plaintext of the encrypted bundle, for integrity check."
+    }
+  }
+}

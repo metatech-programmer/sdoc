@@ -70,6 +70,33 @@ Este repositorio contiene:
 
 ---
 
+## Trabajar con archivos `.sdoc` en código
+
+```ts
+import { createSdoc, serializeSdoc, parseSdoc } from "@sdoc/format";
+
+// Crear un .sdoc nuevo
+const file = await createSdoc({
+  title: "Mi documento",
+  owner: { id: "usr_01HXYZ..." },
+});
+
+// Serializar a bytes (listo para descargar / guardar)
+const bytes = await serializeSdoc(file);
+
+// Leer un .sdoc desde disco
+const parsed = await parseSdoc(bytes);
+console.log(parsed.manifest.title);
+```
+
+Firma Ed25519, cifrado AES-256-GCM, validación de schemas, CLI:
+ver [`packages/sdoc-format/README.md`](packages/sdoc-format/README.md).
+
+Tres archivos `.sdoc` de ejemplo (simple, firmado, cifrado) listos para
+probar en [`packages/sdoc-format/examples/`](packages/sdoc-format/examples/).
+
+---
+
 ## Empezar en 30 segundos
 
 ### Opción 1 — Frontend en modo demo (sin backend)
@@ -189,10 +216,15 @@ Roadmap completo en [`SPEC.md`](SPEC.md) §21. Estado actual sintetizado en [`do
 - [x] Editor de referencia (React + TipTap + Yjs)
 - [x] Exportación PDF / DOCX / HTML
 - [x] PWA · Offline-first · Dark mode
-- [ ] **`packages/sdoc-format`**: librería TS read/write/validate del formato real (prioridad)
-- [ ] **JSON Schemas oficiales** del formato (`manifest.v1.json`, `document.v1.json`)
-- [ ] **CLI `sdoc`**: validate, info, pack, extract, sign
-- [ ] Import/export `.sdoc` desde el editor web
+- [x] **`@sdoc/format`**: librería TS read/write/validate del formato `.sdoc` real
+- [x] **JSON Schemas oficiales** (manifest, document, acl, signature, encryption-meta)
+- [x] **Crypto:** Ed25519 firma + AES-256-GCM + HKDF-SHA256 + PBKDF2 (Web Crypto nativo)
+- [x] **CLI `sdoc`**: init, info, validate, extract, pack, sign, verify, keygen
+- [x] **Import/export `.sdoc`** desde el editor web (botones "Abrir / Descargar .sdoc")
+- [x] Ejemplos `.sdoc` reales (simple, firmado, cifrado)
+- [ ] Publicar `@sdoc/format` en npm
+- [ ] Sitio público de la spec (GitHub Pages)
+- [ ] `packages/sdoc-viewer`: viewer embebible read-only
 - [ ] App móvil
 - [ ] Marketplace de plantillas
 

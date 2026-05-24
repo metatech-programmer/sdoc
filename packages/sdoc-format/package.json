@@ -1,27 +1,65 @@
 {
   "name": "@sdoc/format",
   "version": "1.0.0",
-  "description": "Parser y serializer del formato .sdoc (ZIP+JSON)",
+  "description": "Librería oficial del formato .sdoc — parser, validador, firma Ed25519, cifrado AES-256-GCM.",
+  "license": "MIT",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    }
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./schemas/manifest": "./src/schemas/manifest.v1.json",
+    "./schemas/document": "./src/schemas/document.v1.json",
+    "./schemas/acl": "./src/schemas/acl.v1.json",
+    "./schemas/signature": "./src/schemas/signature.v1.json",
+    "./schemas/encryption-meta": "./src/schemas/encryption-meta.v1.json"
+  },
+  "files": [
+    "dist",
+    "src/schemas",
+    "README.md"
+  ],
+  "bin": {
+    "sdoc": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
-    "test": "vitest run"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "fflate": "^0.8.2"
   },
   "devDependencies": {
+    "@types/node": "^20.14.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.4.0",
+    "typescript": "^5.4.5",
     "vitest": "^1.6.0"
-  }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "sdoc",
+    "document",
+    "format",
+    "open-format",
+    "crdt",
+    "yjs",
+    "ed25519",
+    "aes-gcm"
+  ]
 }

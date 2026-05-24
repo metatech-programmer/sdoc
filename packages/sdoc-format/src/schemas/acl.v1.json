@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sdoc.app/schemas/acl/v1.json",
+  "title": "SDOC ACL v1",
+  "description": "Access control list embedded in a .sdoc file.",
+  "type": "object",
+  "required": ["owner", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "owner": { "type": "string", "pattern": "^usr_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["subject", "permission"],
+        "additionalProperties": false,
+        "properties": {
+          "subject": {
+            "type": "object",
+            "required": ["type", "id"],
+            "properties": {
+              "type": { "enum": ["user", "group"] },
+              "id": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          },
+          "permission": { "enum": ["READ", "COMMENT", "EDIT", "MANAGE", "OWNER"] },
+          "expiresAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      }
+    }
+  }
+}

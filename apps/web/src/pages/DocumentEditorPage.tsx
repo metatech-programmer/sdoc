@@ -1,6 +1,13 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { documentsApi, exportApi } from "../services/api";
+import {
+  buildSdocFromEditor,
+  downloadSdoc,
+  openSdocFromDisk,
+  sdocDocumentToTiptap,
+} from "../services/sdoc-file";
+import { useAuthStore } from "../stores/authStore";
 import { useDocumentStore } from "../stores/documentStore";
 import { useYjsCollaboration } from "../hooks/useYjsCollaboration";
 import { useAutoSave } from "../hooks/useAutoSave";
@@ -101,6 +108,54 @@ export default function DocumentEditorPage() {
       toast.success(`${t("editor.export")} ${format} en proceso. Te avisamos por correo.`);
     } catch {
       toast.error("No pudimos iniciar el export. Reintenta.");
+    }
+  }
+
+  /** Descarga el documento actual como archivo .sdoc (formato oficial). */
+  async function handleDownloadSdoc() {
+    setExportOpen(false);
+    if (!doc) return;
+    try {
+      const user = useAuthStore.getState().user;
+      const tiptapJson = (doc as { content?: unknown }).content ?? {
+        type: "doc",
+        content: [{ type: "paragraph" }],
+      };
+      const file = await buildSdocFromEditor({
+        title: doc.title || t("editor.untitled"),
+        ownerId: user?.id ?? doc.ownerId,
+        ownerEmail: user?.email,
+        ownerName: user?.fullName,
+        language: doc.language ?? "es",
+        tiptapJson,
+      });
+      await downloadSdoc(file);
+      toast.success(`${doc.title}.sdoc descargado`);
+    } catch (e) {
+      console.error(e);
+      toast.error("No se pudo generar el archivo .sdoc");
+    }
+  }
+
+  /** Abre un .sdoc desde disco y crea un documento nuevo con su contenido. */
+  async function handleOpenSdoc() {
+    setExportOpen(false);
+    try {
+      const sdoc = await openSdocFromDisk();
+      if (!sdoc) return;
+      const tiptap = sdocDocumentToTiptap(sdoc.document);
+      const newDoc = await documentsApi.create({
+        title: sdoc.manifest.title || "Importado desde .sdoc",
+        description: sdoc.manifest.description,
+        language: sdoc.manifest.meta?.language ?? "es",
+      });
+      await documentsApi.update(newDoc.id, tiptap);
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success(`Importado: ${sdoc.manifest.title}`);
+      navigate(`/app/documents/${newDoc.id}`);
+    } catch (e) {
+      console.error(e);
+      toast.error("No se pudo abrir el archivo .sdoc");
     }
   }
 
@@ -237,6 +292,14 @@ export default function DocumentEditorPage() {
               </Button>
               {exportOpen && (
                 <div className={styles.exportMenu} role="menu">
+                  <button
+                    role="menuitem"
+                    className={styles.exportItem}
+                    onClick={handleDownloadSdoc}
+                  >
+                    <span className={styles.exportFmt}>.sdoc</span>
+                    <span className={styles.exportTag}>nativo</span>
+                  </button>
                   {(["PDF", "DOCX", "HTML"] as const).map((fmt) => (
                     <button
                       key={fmt}
@@ -248,6 +311,14 @@ export default function DocumentEditorPage() {
                       <Arrow width={14} height={14} />
                     </button>
                   ))}
+                  <button
+                    role="menuitem"
+                    className={styles.exportItem}
+                    onClick={handleOpenSdoc}
+                    style={{ borderTop: "1px dashed var(--color-border)", marginTop: 4, paddingTop: 8 }}
+                  >
+                    <span className={styles.exportFmt}>Abrir .sdoc…</span>
+                  </button>
                 </div>
               )}
             </div>

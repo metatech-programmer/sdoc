@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sdoc.app/schemas/manifest/v1.json",
+  "title": "SDOC Manifest v1",
+  "description": "Manifest of a .sdoc file. See SPEC.md §6.",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "id",
+    "title",
+    "createdAt",
+    "updatedAt",
+    "version",
+    "schemaVersion",
+    "owner",
+    "settings",
+    "security",
+    "meta"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "$schema": { "type": "string", "format": "uri" },
+    "formatVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the .sdoc file format itself."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^doc_[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Globally unique document id (ULID prefixed with doc_)."
+    },
+    "title": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "description": { "type": "string", "maxLength": 4000 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "version": { "type": "integer", "minimum": 1 },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver of the internal document.json schema."
+    },
+    "owner": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^usr_[0-9A-HJKMNP-TV-Z]{26}$" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "required": [
+        "syncEnabled",
+        "offlineEnabled",
+        "collaborationEnabled",
+        "versioningEnabled"
+      ],
+      "properties": {
+        "syncEnabled": { "type": "boolean" },
+        "offlineEnabled": { "type": "boolean" },
+        "collaborationEnabled": { "type": "boolean" },
+        "versioningEnabled": { "type": "boolean" },
+        "maxVersions": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "autoSaveIntervalSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "encryption",
+        "keyDerivation",
+        "contentChecksum",
+        "manifestChecksum",
+        "signatureAlgorithm",
+        "encryptedContent"
+      ],
+      "properties": {
+        "encryption": { "const": "AES-256-GCM" },
+        "keyDerivation": { "const": "HKDF-SHA256" },
+        "contentChecksum": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hex of canonical document.json bytes."
+        },
+        "manifestChecksum": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hex of canonical manifest (excluding this field and signatures)."
+        },
+        "signatureAlgorithm": { "const": "Ed25519" },
+        "signatureRef": {
+          "type": "string",
+          "description": "Path inside the .sdoc ZIP to the signature.json file."
+        },
+        "encryptedContent": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "wordCount": { "type": "integer", "minimum": 0 },
+        "pageCount": { "type": "integer", "minimum": 0 },
+        "readingTimeSeconds": { "type": "integer", "minimum": 0 },
+        "language": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 60 },
+          "maxItems": 50
+        },
+        "aiGenerated": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

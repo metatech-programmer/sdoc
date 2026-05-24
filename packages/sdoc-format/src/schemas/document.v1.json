@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sdoc.app/schemas/document/v1.json",
+  "title": "SDOC Document v1",
+  "description": "Structured content tree of a .sdoc document. See SPEC.md §6.",
+  "type": "object",
+  "required": ["type", "version", "pages"],
+  "additionalProperties": false,
+  "properties": {
+    "type": { "const": "document" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/page" }
+    }
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "required": ["id", "order", "elements"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^page_\\d{3,}$" },
+        "order": { "type": "integer", "minimum": 1 },
+        "size": {
+          "type": "object",
+          "required": ["width", "height", "unit"],
+          "properties": {
+            "width": { "type": "number", "exclusiveMinimum": 0 },
+            "height": { "type": "number", "exclusiveMinimum": 0 },
+            "unit": { "enum": ["px", "mm", "cm", "in", "pt"] }
+          },
+          "additionalProperties": false
+        },
+        "margins": {
+          "type": "object",
+          "required": ["top", "right", "bottom", "left"],
+          "properties": {
+            "top": { "type": "number", "minimum": 0 },
+            "right": { "type": "number", "minimum": 0 },
+            "bottom": { "type": "number", "minimum": 0 },
+            "left": { "type": "number", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "elements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/element" }
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^e\\d{3,}$" },
+        "type": {
+          "enum": [
+            "heading",
+            "paragraph",
+            "image",
+            "table",
+            "codeblock",
+            "embed",
+            "list",
+            "quote",
+            "divider"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "heading" } } },
+          "then": {
+            "required": ["attrs", "children"],
+            "properties": {
+              "attrs": {
+                "type": "object",
+                "required": ["level"],
+                "properties": { "level": { "type": "integer", "minimum": 1, "maximum": 6 } }
+              },
+              "children": { "type": "array", "items": { "$ref": "#/$defs/textNode" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "paragraph" } } },
+          "then": {
+            "required": ["children"],
+            "properties": {
+              "children": { "type": "array", "items": { "$ref": "#/$defs/textNode" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "image" } } },
+          "then": {
+            "required": ["src"],
+            "properties": {
+              "src": { "type": "string", "minLength": 1 },
+              "alt": { "type": "string" },
+              "width": { "type": "number", "exclusiveMinimum": 0 },
+              "height": { "type": "number", "exclusiveMinimum": 0 },
+              "alignment": { "enum": ["left", "center", "right"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "table" } } },
+          "then": {
+            "required": ["rows", "cols"],
+            "properties": {
+              "rows": { "type": "integer", "minimum": 1 },
+              "cols": { "type": "integer", "minimum": 1 },
+              "cells": { "type": "array" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "codeblock" } } },
+          "then": {
+            "required": ["content"],
+            "properties": {
+              "language": { "type": "string" },
+              "content": { "type": "string" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "embed" } } },
+          "then": {
+            "required": ["embedType"],
+            "properties": {
+              "embedType": { "type": "string" },
+              "data": { "type": "object" },
+              "fallback": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "textNode": {
+      "type": "object",
+      "required": ["type", "content"],
+      "properties": {
+        "type": { "const": "text" },
+        "content": { "type": "string" },
+        "marks": {
+          "type": "array",
+          "items": {
+            "enum": ["bold", "italic", "underline", "strike", "code", "link", "highlight"]
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

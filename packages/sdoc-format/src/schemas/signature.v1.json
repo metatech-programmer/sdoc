@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sdoc.app/schemas/signature/v1.json",
+  "title": "SDOC Signature v1",
+  "description": "Ed25519 signature payload embedded under security/signature.json.",
+  "type": "object",
+  "required": ["algorithm", "signedAt", "signedBy", "signedHash", "signature"],
+  "additionalProperties": false,
+  "properties": {
+    "algorithm": { "const": "Ed25519" },
+    "signedAt": { "type": "string", "format": "date-time" },
+    "signedBy": {
+      "type": "object",
+      "required": ["userId", "publicKey"],
+      "properties": {
+        "userId": { "type": "string", "minLength": 1 },
+        "publicKey": {
+          "type": "string",
+          "description": "Base64 of the 32-byte raw Ed25519 public key.",
+          "pattern": "^[A-Za-z0-9+/]+=*$"
+        },
+        "publicKeyFingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "signedHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 (hex) of (canonicalManifest || canonicalDocument)."
+    },
+    "signature": {
+      "type": "string",
+      "description": "Base64 of the 64-byte Ed25519 signature.",
+      "pattern": "^[A-Za-z0-9+/]+=*$"
+    }
+  }
+}
