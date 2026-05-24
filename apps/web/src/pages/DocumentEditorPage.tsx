@@ -111,16 +111,52 @@ export default function DocumentEditorPage() {
     }
   }
 
-  /** Descarga el documento actual como archivo .sdoc (formato oficial). */
+  /**
+   * Descarga el documento actual como archivo .sdoc.
+   * Estrategia:
+   *   1. Pide al backend `GET /documents/{id}/download.sdoc` (canónico).
+   *   2. Si no hay backend o falla, construye el .sdoc client-side con
+   *      `@sdoc/format` (demo mode / offline).
+   */
   async function handleDownloadSdoc() {
     setExportOpen(false);
     if (!doc) return;
+    const safeTitle = (doc.title || t("editor.untitled")).replace(/[\\/:*?"<>|]/g, "_");
     try {
+      const buf = id ? await documentsApi.downloadSdocBlob(id) : null;
+      if (buf) {
+        const blob = new Blob([buf], { type: "application/vnd.sdoc+zip" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${safeTitle}.sdoc`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          a.remove();
+        }, 100);
+        toast.success(`${safeTitle}.sdoc descargado`);
+        return;
+      }
+
+      // Fallback client-side
       const user = useAuthStore.getState().user;
       const tiptapJson = (doc as { content?: unknown }).content ?? {
         type: "doc",
         content: [{ type: "paragraph" }],
       };
+
+      // Incluir el estado CRDT actual de Yjs para que otro cliente pueda
+      // continuar la colaboración desde el archivo descargado.
+      let crdtState: Uint8Array | undefined;
+      try {
+        const Y = await import("yjs");
+        if (ydoc) crdtState = Y.encodeStateAsUpdate(ydoc);
+      } catch {
+        // Si Y.js no está disponible o el ydoc está vacío, se omite.
+      }
+
       const file = await buildSdocFromEditor({
         title: doc.title || t("editor.untitled"),
         ownerId: user?.id ?? doc.ownerId,
@@ -128,16 +164,22 @@ export default function DocumentEditorPage() {
         ownerName: user?.fullName,
         language: doc.language ?? "es",
         tiptapJson,
+        crdtState,
       });
-      await downloadSdoc(file);
-      toast.success(`${doc.title}.sdoc descargado`);
+      await downloadSdoc(file, safeTitle);
+      toast.success(`${safeTitle}.sdoc descargado`);
     } catch (e) {
       console.error(e);
       toast.error("No se pudo generar el archivo .sdoc");
     }
   }
 
-  /** Abre un .sdoc desde disco y crea un documento nuevo con su contenido. */
+  /**
+   * Abre un .sdoc desde disco y crea un documento nuevo con su contenido.
+   *
+   * Si el archivo trae `crdtState` (estado Yjs binario), lo aplicamos al
+   * `ydoc` actual para preservar el historial CRDT del autor original.
+   */
   async function handleOpenSdoc() {
     setExportOpen(false);
     try {
@@ -150,6 +192,17 @@ export default function DocumentEditorPage() {
         language: sdoc.manifest.meta?.language ?? "es",
       });
       await documentsApi.update(newDoc.id, tiptap);
+
+      // Si el .sdoc traía estado CRDT, lo aplicamos al ydoc del editor.
+      if (sdoc.crdtState && sdoc.crdtState.byteLength > 0 && ydoc) {
+        try {
+          const Y = await import("yjs");
+          Y.applyUpdate(ydoc, sdoc.crdtState);
+        } catch {
+          // Si falla el merge CRDT, igual mantenemos el contenido importado.
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success(`Importado: ${sdoc.manifest.title}`);
       navigate(`/app/documents/${newDoc.id}`);

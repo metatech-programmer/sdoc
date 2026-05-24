@@ -2,6 +2,8 @@ package app.sdoc.document.controller;
 
 import app.sdoc.document.domain.dto.CreateDocumentRequest;
 import app.sdoc.document.domain.dto.DocumentResponse;
+import app.sdoc.document.domain.entity.Document;
+import app.sdoc.document.sdoc.SdocFileBuilder;
 import app.sdoc.document.service.DocumentQueryService;
 import app.sdoc.document.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +13,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @RestController
@@ -25,6 +31,7 @@ public class DocumentControllerV1 {
 
     private final DocumentService documentService;
     private final DocumentQueryService documentQueryService;
+    private final SdocFileBuilder sdocFileBuilder;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -88,5 +95,38 @@ public class DocumentControllerV1 {
     public ResponseEntity<Void> delete(@PathVariable String id) {
         documentService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Descarga el documento empaquetado como archivo `.sdoc` real (ZIP+JSON).
+     * Cumple SPEC.md §6. El navegador recibe `Content-Disposition: attachment`
+     * con un nombre derivado del título, listo para guardar en disco.
+     */
+    @GetMapping("/{id}/download.sdoc")
+    @Operation(summary = "Descargar documento como archivo .sdoc")
+    public ResponseEntity<byte[]> downloadSdoc(@PathVariable String id) {
+        Document doc = documentService.findEntityById(id);
+        byte[] bytes = sdocFileBuilder.build(doc);
+
+        String safeName = sanitizeFilename(doc.getTitle() != null ? doc.getTitle() : "documento");
+        ContentDisposition disposition = ContentDisposition.attachment()
+            .filename(safeName + ".sdoc", StandardCharsets.UTF_8)
+            .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(disposition);
+        headers.setContentType(MediaType.parseMediaType("application/vnd.sdoc+zip"));
+        headers.setContentLength(bytes.length);
+        headers.setCacheControl("no-store");
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
+
+    /** Quita caracteres inválidos para nombres de archivo en Windows/Linux/Mac. */
+    private static String sanitizeFilename(String name) {
+        String trimmed = name.trim().replaceAll("[\\\\/:*?\"<>|]", "_");
+        if (trimmed.isEmpty()) return "documento";
+        if (trimmed.length() > 100) trimmed = trimmed.substring(0, 100);
+        return trimmed;
     }
 }

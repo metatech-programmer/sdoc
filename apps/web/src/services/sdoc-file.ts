@@ -192,7 +192,12 @@ export function sdocDocumentToTiptap(doc: SdocDocument): unknown {
 
 /**
  * Conveniencia: crea un SdocFile completo desde la combinación
- * (metadata mínima + JSON TipTap) que produce el editor.
+ * (metadata mínima + JSON TipTap + estado CRDT opcional) que produce el editor.
+ *
+ * Si se pasa `crdtState` (típicamente `Y.encodeStateAsUpdate(ydoc)`), el
+ * archivo .sdoc resultante lo incluye en `sync/crdt-state.bin`. Eso permite
+ * que otro cliente abra el .sdoc y continúe la colaboración desde el mismo
+ * estado, sin necesidad del servidor de sync.
  */
 export async function buildSdocFromEditor(input: {
   title: string;
@@ -201,13 +206,18 @@ export async function buildSdocFromEditor(input: {
   ownerName?: string;
   language?: string;
   tiptapJson: unknown;
+  crdtState?: Uint8Array;
 }): Promise<SdocFile> {
-  return createSdoc({
+  const file = await createSdoc({
     title: input.title,
     owner: { id: input.ownerId, email: input.ownerEmail, name: input.ownerName },
     language: input.language,
     initialDocument: tiptapToSdocDocument(input.tiptapJson),
   });
+  if (input.crdtState && input.crdtState.byteLength > 0) {
+    file.crdtState = input.crdtState;
+  }
+  return file;
 }
 
 // ============================================================

@@ -88,6 +88,25 @@ public class DocumentService {
             .map(this::toResponse);
     }
 
+    /**
+     * Devuelve la entidad cruda (no DTO) tras verificar permisos de lectura.
+     * Usado por endpoints que necesitan acceso completo, como
+     * {@code GET /documents/{id}/download.sdoc}.
+     */
+    @Transactional(readOnly = true)
+    public Document findEntityById(String id) {
+        UserContext user = UserContext.fromRequest();
+        Document doc = findOrThrow(id);
+
+        opaClient.checkPermission("read",
+            Map.of("id", user.getUserId(), "roles", user.getRoles()),
+            Map.of("id", id, "owner_id", doc.getOwnerId().toString(),
+                "is_public", doc.getIsPublic())
+        );
+
+        return doc;
+    }
+
     @Transactional
     public DocumentResponse update(String id, Object content) {
         UserContext user = UserContext.fromRequest();

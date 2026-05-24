@@ -235,6 +235,25 @@ export const documentsApi = {
         };
       }
     ),
+
+  /**
+   * Descarga el documento como bytes binarios del archivo `.sdoc` real
+   * generado por el backend (`GET /documents/{id}/download.sdoc`).
+   * En demo mode, devuelve null para que el caller use la construcción
+   * client-side con `@sdoc/format`.
+   */
+  downloadSdocBlob: async (id: string): Promise<ArrayBuffer | null> => {
+    if (isDemoMode()) return null;
+    try {
+      const res = await api.get(`/documents/${id}/download.sdoc`, {
+        responseType: "arraybuffer",
+        headers: { Accept: "application/vnd.sdoc+zip" },
+      });
+      return res.data as ArrayBuffer;
+    } catch {
+      return null;
+    }
+  },
 };
 
 export const exportApi = {

@@ -95,6 +95,25 @@ ver [`packages/sdoc-format/README.md`](packages/sdoc-format/README.md).
 Tres archivos `.sdoc` de ejemplo (simple, firmado, cifrado) listos para
 probar en [`packages/sdoc-format/examples/`](packages/sdoc-format/examples/).
 
+### Mostrar un `.sdoc` en cualquier web
+
+```ts
+import { mountSdocViewer } from "@sdoc/viewer";
+import "@sdoc/viewer/style.css";
+
+const bytes = await fetch("/api/v1/documents/abc/download.sdoc")
+  .then((r) => r.arrayBuffer());
+
+await mountSdocViewer(document.getElementById("viewer")!, {
+  source: new Uint8Array(bytes),
+  verifySignature: true,
+});
+```
+
+El viewer es vanilla (sin React/Vue), verifica la firma Ed25519, soporta
+dark mode, escapa contenido por XSS-safety. Ver
+[`packages/sdoc-viewer/README.md`](packages/sdoc-viewer/README.md).
+
 ---
 
 ## Empezar en 30 segundos
@@ -221,10 +240,13 @@ Roadmap completo en [`SPEC.md`](SPEC.md) §21. Estado actual sintetizado en [`do
 - [x] **Crypto:** Ed25519 firma + AES-256-GCM + HKDF-SHA256 + PBKDF2 (Web Crypto nativo)
 - [x] **CLI `sdoc`**: init, info, validate, extract, pack, sign, verify, keygen
 - [x] **Import/export `.sdoc`** desde el editor web (botones "Abrir / Descargar .sdoc")
+- [x] **CRDT round-trip dentro del `.sdoc`**: el estado Yjs viaja con el archivo
+- [x] **Backend**: `GET /documents/{id}/download.sdoc` (Java + canonical JSON)
+- [x] **`@sdoc/viewer`**: viewer read-only embebible, sin framework
 - [x] Ejemplos `.sdoc` reales (simple, firmado, cifrado)
-- [ ] Publicar `@sdoc/format` en npm
+- [ ] Publicar `@sdoc/format` y `@sdoc/viewer` en npm
 - [ ] Sitio público de la spec (GitHub Pages)
-- [ ] `packages/sdoc-viewer`: viewer embebible read-only
+- [ ] Firma Ed25519 automática del `.sdoc` desde backend (Vault)
 - [ ] App móvil
 - [ ] Marketplace de plantillas
 

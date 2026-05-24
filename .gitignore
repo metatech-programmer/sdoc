@@ -102,6 +102,10 @@ tmp/
 temp/
 .tmp/
 
+# Vite dev artifacts
+*.timestamp-*.mjs
+.vite/
+
 # Monitoring data (solo en desarrollo)
 infrastructure/docker/volumes/
 

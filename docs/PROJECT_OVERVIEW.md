@@ -167,9 +167,11 @@ sdoc-platform/
 | CLI `sdoc` (init/info/validate/extract/pack/sign/verify/keygen) | ✅ Implementado, bin publicado | — |
 | Archivos `.sdoc` de ejemplo (simple, signed, encrypted) | ✅ 3 ejemplos en `packages/sdoc-format/examples/` | — |
 | `packages/sdoc-editor` (editor embebible standalone) | ❌ No existe (el editor de `apps/web` cumple por ahora) | Bajo |
-| `packages/sdoc-viewer` (viewer embebible) | ❌ No existe | Bajo |
+| `packages/sdoc-viewer` (viewer embebible read-only) | ✅ Implementado, 9/9 tests pasan. `mountSdocViewer`, `mountSdocViewerFromUrl`, `renderDocumentToHtml` (SSR). Verifica firma Ed25519 al montar. Sin dependencias de framework. | — |
 | `packages/sdoc-sdk` (SDK público con API REST) | ❌ No existe | Bajo (fase futura) |
 | Validador online (sitio web) | ❌ No existe | Bajo |
+| Backend: endpoint `GET /documents/{id}/download.sdoc` | ✅ Implementado en `document-service` (`SdocFileBuilder` Java + controller). Devuelve `application/vnd.sdoc+zip`. Canonicaliza JSON igual que la lib TS para checksums consistentes. | — |
+| Editor: incluye `crdtState` Yjs al exportar y lo restaura al importar | ✅ Implementado en `apps/web` (`Y.encodeStateAsUpdate` en download, `Y.applyUpdate` en open). Permite continuar la colaboración desde el archivo descargado. | — |
 
 ### Infraestructura
 
@@ -276,27 +278,32 @@ no "formato". **Debería pivotar a vender el formato `.sdoc`.**
 
 ## 5. Próximos Pasos Sugeridos (al humano)
 
-Con Gaps 1 y 2 resueltos, los siguientes pasos según prioridad:
+Lo que SÍ está hecho:
 
-1. **Publicar `@sdoc/format` en npm** para que terceros puedan usarlo
-   (`npm publish` desde `packages/sdoc-format/`).
-2. **Sitio público de la spec** (GitHub Pages): publicar `SPEC.md` + los
-   JSON Schemas en una URL canónica tipo `https://sdoc.app/schemas/...`.
-3. **Backend: que `document-service` exporte/importe `.sdoc` real** además
-   del JSON actual. Endpoint `GET /documents/:id/download.sdoc`.
-4. **Render service: que cuando se exporte a PDF/DOCX/HTML, también pueda
-   exportar a `.sdoc` con firma del owner** (usa la clave Ed25519 de Vault).
-5. **`packages/sdoc-viewer`**: viewer embebible read-only basado en
-   `@sdoc/format` + tipografía/maquetación. Útil para mostrar `.sdoc`
-   en blogs, emails, otros productos.
-6. **Validar el flujo end-to-end manualmente:** crear documento en editor →
-   exportar como `.sdoc` → cerrar pestaña → abrir el `.sdoc` desde disco
-   → debe verse idéntico, con la firma del autor.
-7. **Integración CRDT real:** que `serializeSdoc` incluya el `crdtState`
-   binario de Yjs, y `parseSdoc` lo restaure al abrir.
+- ✅ Lib `@sdoc/format` (37 tests).
+- ✅ `packages/sdoc-viewer` read-only (9 tests).
+- ✅ Backend Java: `GET /documents/{id}/download.sdoc` con `SdocFileBuilder`
+  canónico (mismos checksums que la lib TS).
+- ✅ Editor: import/export `.sdoc` desde disco con CRDT round-trip
+  (`Y.encodeStateAsUpdate` / `Y.applyUpdate`).
+- ✅ Tests CRDT round-trip dentro del paquete (4 tests).
 
-Estos pasos están alineados con `SPEC.md` §6, §7.4 (render-service para
-exports), §9.3 (crypto), y §21 (roadmap fase 3+).
+Lo que queda como mejora:
+
+1. **Publicar `@sdoc/format` y `@sdoc/viewer` en npm** (`npm publish`).
+2. **Sitio público de la spec** (GitHub Pages) para que
+   `https://sdoc.app/schemas/manifest/v1.json` resuelva.
+3. **Backend Java: firma Ed25519 automática** del `.sdoc` descargado usando
+   la clave del owner guardada en Vault (`SPEC.md` §9.1 / §9.6).
+4. **Endpoint `POST /documents/import.sdoc`** que reciba un `.sdoc` subido
+   y cree el documento en el backend (hoy el editor lo hace todo en cliente).
+5. **`packages/sdoc-cli`** dedicado (el actual está dentro de `sdoc-format`).
+6. **Validar el flujo end-to-end manualmente** levantando todo el stack
+   (`docker compose up -d`) y haciendo el ciclo crear → descargar → cerrar
+   → reabrir → verificar firma.
+
+Estos pasos están alineados con `SPEC.md` §6, §7.2 (document-service),
+§9.3 (crypto), y §21 (roadmap fase 3+).
 
 Después de esto, retomar el roadmap original de la spec (Fases 4, 5).
 
