@@ -23,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     if (import.meta.env.DEV) {
-      console.error("[Folio ErrorBoundary]", error, info);
+      console.error("[SDOC ErrorBoundary]", error, info);
     }
     // TODO: enviar a observability (Sentry/Logflare)
   }
@@ -88,7 +88,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
             <Button variant="primary" onClick={this.reload}>
-              Recargar Folio
+              Recargar SDOC
             </Button>
             <Button variant="ghost" onClick={this.reset}>
               Reintentar

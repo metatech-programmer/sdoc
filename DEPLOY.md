@@ -1,6 +1,6 @@
-# Folio · Guía de despliegue
+# SDOC · Guía de despliegue
 
-Folio se puede desplegar en **5 minutos** usando solo planes gratuitos. Esta guía cubre las combinaciones recomendadas.
+SDOC se puede desplegar en **5 minutos** usando solo planes gratuitos. Esta guía cubre las combinaciones recomendadas.
 
 ---
 
@@ -14,18 +14,18 @@ Folio se puede desplegar en **5 minutos** usando solo planes gratuitos. Esta gu�
 | Redis | **Upstash** | Gratis (10 K cmd/día) | 2 min |
 | Object storage | **Backblaze B2** o **Cloudflare R2** | Gratis (10 GB) | 5 min |
 
-**Total: ~15 minutos para tener Folio en producción con dominio público.**
+**Total: ~15 minutos para tener SDOC en producción con dominio público.**
 
 ---
 
 ## Opción A — Demo standalone (sin backend, ~3 minutos)
 
-Folio incluye **modo demo automático**: si el backend no responde, la app funciona con datos seed locales. Útil para mostrar el producto sin levantar todo el stack.
+El editor incluye **modo demo automático**: si el backend no responde, la app funciona con datos seed locales. Útil para mostrar el producto sin levantar todo el stack.
 
 ```bash
 # 1. Clona
-git clone https://github.com/metatech-programmer/folio.git
-cd folio
+git clone https://github.com/metatech-programmer/sdoc.git
+cd sdoc
 
 # 2. Instala dependencias y compila web
 npm install --workspaces --include-workspace-root
@@ -53,20 +53,20 @@ vercel --prod
 Variables de entorno a configurar en el dashboard de Vercel:
 
 ```
-VITE_API_URL=https://folio-api.onrender.com/api/v1
-VITE_WS_URL=wss://folio-api.onrender.com/ws/sync
+VITE_API_URL=https://sdoc-api.onrender.com/api/v1
+VITE_WS_URL=wss://sdoc-api.onrender.com/ws/sync
 ```
 
 ### 2. PostgreSQL → Neon
 
 1. Crea cuenta en [neon.tech](https://neon.tech) (gratis, sin tarjeta).
-2. Crea proyecto `folio-prod`.
+2. Crea proyecto `sdoc-prod`.
 3. Copia la connection string (la usarás en el siguiente paso).
 
 ### 3. Redis → Upstash
 
 1. Crea cuenta en [upstash.com](https://upstash.com).
-2. Crea database Redis llamado `folio-cache` en la región más cercana.
+2. Crea database Redis llamado `sdoc-cache` en la región más cercana.
 3. Copia el `UPSTASH_REDIS_URL`.
 
 ### 4. API Gateway → Render
@@ -87,13 +87,13 @@ KEYCLOAK_URL=<opcional para demo, requerido para auth real>
 ### 5. Object Storage → Cloudflare R2
 
 1. Cuenta en [cloudflare.com](https://cloudflare.com).
-2. R2 → Create bucket `folio-assets`.
+2. R2 → Create bucket `sdoc-assets`.
 3. Genera API token con permiso `Object Read/Write`.
 4. Variables:
 
 ```
 S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-S3_BUCKET=folio-assets
+S3_BUCKET=sdoc-assets
 S3_ACCESS_KEY=<tu access key>
 S3_SECRET_KEY=<tu secret>
 ```
@@ -120,9 +120,9 @@ Railway detecta `railway.toml` y `Dockerfile.gateway` automáticamente.
 Fly tiene región `bog` (Bogotá) para latencia mínima en Colombia/LATAM.
 
 ```bash
-flyctl launch --copy-config --name folio-api
-flyctl postgres create --name folio-pg --region bog
-flyctl redis create --name folio-redis --region bog
+flyctl launch --copy-config --name sdoc-api
+flyctl postgres create --name sdoc-pg --region bog
+flyctl redis create --name sdoc-redis --region bog
 flyctl deploy
 ```
 
@@ -136,7 +136,7 @@ flyctl deploy
 VITE_API_URL=https://api.tudominio.com/api/v1
 VITE_WS_URL=wss://api.tudominio.com/ws/sync
 VITE_DEMO_MODE=false
-VITE_BRAND_NAME=Folio
+VITE_BRAND_NAME=SDOC
 VITE_SUPPORT_EMAIL=hola@tudominio.com
 ```
 
@@ -144,7 +144,7 @@ VITE_SUPPORT_EMAIL=hola@tudominio.com
 
 ```env
 # Database
-POSTGRES_URL=postgres://user:pass@host:5432/folio_db
+POSTGRES_URL=postgres://user:pass@host:5432/sdoc_db
 REDIS_URL=redis://default:pass@host:6379
 
 # Auth (opcional para demo, requerido en prod)
@@ -153,7 +153,7 @@ JWT_SECRET=<openssl rand -base64 32>
 
 # Object Storage
 S3_ENDPOINT=https://account.r2.cloudflarestorage.com
-S3_BUCKET=folio-assets
+S3_BUCKET=sdoc-assets
 S3_ACCESS_KEY=...
 S3_SECRET_KEY=...
 
@@ -190,9 +190,6 @@ STRIPE_SECRET_KEY=sk_test_...
    - `A` y `AAAA` → IPs de Vercel (auto)
    - `CNAME api` → `<tu-app>.onrender.com`
 3. Vercel y Render generan certificados SSL automáticamente.
-
-Sugerencias de nombre:
-- `folio.app` · `folio.co` · `usefolio.com` · `folio.com.co`
 
 ---
 

@@ -1,7 +1,7 @@
 {
-  "name": "Folio · Editor de Documentos",
-  "short_name": "Folio",
-  "description": "Editor colaborativo offline-first. Hecho en Colombia.",
+  "name": "SDOC · Editor del formato .sdoc",
+  "short_name": "SDOC",
+  "description": "Editor de referencia del formato .sdoc. Colaborativo, offline-first.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAFAF7",

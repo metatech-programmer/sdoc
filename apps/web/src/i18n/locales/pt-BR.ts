@@ -1,5 +1,5 @@
 const pt = {
-  "brand.tagline": "Documentos que parecem escritos à mão",
+  "brand.tagline": "Um novo formato aberto para documentos vivos",
   "brand.madeIn": "Feito na Colômbia",
 
   "nav.features": "Recursos",
@@ -11,20 +11,20 @@ const pt = {
   "nav.signOut": "Sair",
 
   "hero.eyebrow": "Lançamento 2026",
-  "hero.title": "O editor onde suas ideias\nencontram a forma final.",
-  "hero.subtitle": "Folio combina colaboração em tempo real, exportação profissional para PDF/DOCX e trabalho offline. Desenhado na Colômbia para criadores de qualquer lugar.",
+  "hero.title": "O formato de documento\nque não precisa de servidor para viver.",
+  "hero.subtitle": "SDOC (.sdoc) é um formato de arquivo aberto: colaborativo, offline-first, assinável e criptografável. Carrega dentro seu histórico, permissões e assinatura. Open source, feito na Colômbia.",
   "hero.cta.primary": "Começar grátis",
   "hero.cta.secondary": "Ver demo",
   "hero.note": "Sem cartão · 1 GB grátis · Cancele quando quiser",
 
-  "features.eyebrow": "Por que Folio",
+  "features.eyebrow": "Por que SDOC",
   "features.title": "Uma ferramenta de escrita\nque respeita seu tempo.",
 
   "feature.collab.title": "Colaboração em tempo real",
   "feature.collab.desc": "Edite com sua equipe sem conflitos. Yjs CRDT garante que cada mudança chegue, mesmo com conexão instável.",
 
   "feature.offline.title": "Funciona offline",
-  "feature.offline.desc": "Continue escrevendo no ônibus, no avião ou em uma área sem sinal. Folio sincroniza quando voltar.",
+  "feature.offline.desc": "Continue escrevendo no ônibus, no avião ou em uma área sem sinal. SDOC sincroniza quando voltar.",
 
   "feature.export.title": "Exporte como profissional",
   "feature.export.desc": "PDF, DOCX, HTML ou EPUB. Templates para relatórios executivos, teses e publicações.",
@@ -90,7 +90,7 @@ const pt = {
   "auth.submit.signUp": "Criar conta",
   "auth.loading": "Um momento…",
   "auth.terms": "Ao criar conta você aceita os Termos e a Política de Privacidade.",
-  "auth.noAccount": "Novo no Folio?",
+  "auth.noAccount": "Novo no SDOC?",
   "auth.hasAccount": "Já tem conta?",
   "auth.error.invalidEmail": "E-mail inválido",
   "auth.error.shortPassword": "Mínimo 8 caracteres",
@@ -148,7 +148,7 @@ const pt = {
   "footer.habeas": "Habeas Data",
   "footer.contact": "Contato",
   "footer.status": "Status",
-  "footer.copyright": "© {year} Folio. Feito com carinho em Medellín, Colômbia.",
+  "footer.copyright": "© {year} SDOC. Feito com carinho em Medellín, Colômbia.",
 
   "common.cancel": "Cancelar",
   "common.confirm": "Confirmar",

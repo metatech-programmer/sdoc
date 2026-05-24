@@ -1,5 +1,5 @@
 # ============================================================
-# Railway · Despliegue del API Gateway de Folio (Spring Cloud Gateway)
+# Railway · Despliegue del API Gateway de SDOC (Spring Cloud Gateway)
 # Servicio único multi-puerto. Ajusta `startCommand` según tu monorepo.
 # ============================================================
 

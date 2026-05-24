@@ -81,7 +81,7 @@
 
 .v_accent {
   background: var(--color-accent);
-  color: var(--folio-ink);
+  color: var(--sdoc-ink);
   border-color: var(--color-accent);
 }
 .v_accent:hover:not(:disabled) {

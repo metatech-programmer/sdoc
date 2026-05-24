@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Folio · Script de verificación pre-deploy
+# SDOC · Script de verificación pre-deploy
 # Corre desde la raíz del repo: ./scripts/verify.sh
 # ============================================================
 set -euo pipefail
@@ -10,19 +10,30 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-ok()    { echo -e "${GREEN}✓${NC} $1"; }
-fail()  { echo -e "${RED}✗${NC} $1"; exit 1; }
-warn()  { echo -e "${YELLOW}⚠${NC} $1"; }
-info()  { echo -e "  $1"; }
+ok()    { echo -e "${GREEN}OK${NC}   $1"; }
+fail()  { echo -e "${RED}FAIL${NC} $1"; exit 1; }
+warn()  { echo -e "${YELLOW}WARN${NC} $1"; }
 
 echo ""
 echo "==========================================================="
-echo "  Folio · Verificación pre-deploy"
+echo "  SDOC · Verificación pre-deploy"
 echo "==========================================================="
 echo ""
 
-# ----- 1. Estructura básica -----
-echo "📁 Verificando estructura del proyecto..."
+# ----- 1. Documentación gobernanza -----
+echo "[1/6] Gobernanza para IA / contribuidores..."
+[ -f AGENTS.md ]                       && ok "AGENTS.md"                  || fail "AGENTS.md falta"
+[ -f CLAUDE.md ]                       && ok "CLAUDE.md"                  || fail "CLAUDE.md falta"
+[ -f SPEC.md ]                         && ok "SPEC.md"                    || fail "SPEC.md falta"
+[ -f .cursorrules ]                    && ok ".cursorrules"               || warn ".cursorrules falta"
+[ -f .github/copilot-instructions.md ] && ok "copilot-instructions.md"    || warn "copilot-instructions.md falta"
+[ -f docs/PROJECT_OVERVIEW.md ]        && ok "docs/PROJECT_OVERVIEW.md"   || fail "PROJECT_OVERVIEW.md falta"
+[ -f docs/FORMAT_SPEC_INDEX.md ]       && ok "docs/FORMAT_SPEC_INDEX.md"  || fail "FORMAT_SPEC_INDEX.md falta"
+[ -f docs/AI_TASK_PROTOCOL.md ]        && ok "docs/AI_TASK_PROTOCOL.md"   || fail "AI_TASK_PROTOCOL.md falta"
+
+# ----- 2. Estructura base -----
+echo ""
+echo "[2/6] Estructura base..."
 [ -f README.md ]               && ok "README.md"               || fail "README.md falta"
 [ -f LICENSE ]                 && ok "LICENSE"                 || fail "LICENSE falta"
 [ -f CONTRIBUTING.md ]         && ok "CONTRIBUTING.md"         || fail "CONTRIBUTING.md falta"
@@ -31,11 +42,10 @@ echo "📁 Verificando estructura del proyecto..."
 [ -f DEPLOY.md ]               && ok "DEPLOY.md"               || fail "DEPLOY.md falta"
 [ -f .gitignore ]              && ok ".gitignore"              || fail ".gitignore falta"
 [ -d .github/ISSUE_TEMPLATE ]  && ok ".github/ISSUE_TEMPLATE"  || fail ".github/ISSUE_TEMPLATE falta"
-[ -d release ]                 && ok "release/"                || warn "release/ falta"
 
-# ----- 2. Frontend -----
+# ----- 3. Frontend -----
 echo ""
-echo "🎨 Verificando frontend..."
+echo "[3/6] Frontend..."
 [ -f apps/web/package.json ]                       && ok "package.json"   || fail "package.json frontend falta"
 [ -f apps/web/index.html ]                         && ok "index.html"     || fail "index.html falta"
 [ -f apps/web/src/main.tsx ]                       && ok "main.tsx"       || fail "main.tsx falta"
@@ -45,22 +55,21 @@ echo "🎨 Verificando frontend..."
 [ -f apps/web/public/favicon.svg ]                 && ok "favicon.svg"    || fail "favicon falta"
 [ -f apps/web/public/manifest.webmanifest ]        && ok "manifest"       || fail "manifest falta"
 [ -f apps/web/public/robots.txt ]                  && ok "robots.txt"     || fail "robots falta"
-[ -f apps/web/public/sitemap.xml ]                 && ok "sitemap.xml"    || fail "sitemap falta"
 [ -f apps/web/src/lib/i18n.ts ]                    && ok "i18n.ts"        || fail "i18n falta"
 [ -f apps/web/src/lib/theme.ts ]                   && ok "theme.ts"       || fail "theme falta"
 [ -f apps/web/src/lib/format.ts ]                  && ok "format.ts"      || fail "format falta"
 [ -f apps/web/src/lib/validators.ts ]              && ok "validators.ts"  || fail "validators falta"
 
-# ----- 3. i18n locales -----
+# ----- 4. i18n -----
 echo ""
-echo "🌐 Verificando i18n..."
+echo "[4/6] i18n locales..."
 [ -f apps/web/src/i18n/locales/es-CO.ts ]  && ok "es-CO"  || fail "es-CO locale falta"
 [ -f apps/web/src/i18n/locales/en.ts ]     && ok "en"     || fail "en locale falta"
 [ -f apps/web/src/i18n/locales/pt-BR.ts ]  && ok "pt-BR"  || fail "pt-BR locale falta"
 
-# ----- 4. Deploy configs -----
+# ----- 5. Deploy configs -----
 echo ""
-echo "🚀 Verificando configuraciones de deploy..."
+echo "[5/6] Deploy configs..."
 [ -f vercel.json ]                && ok "vercel.json"             || warn "vercel.json falta"
 [ -f netlify.toml ]               && ok "netlify.toml"            || warn "netlify.toml falta"
 [ -f render.yaml ]                && ok "render.yaml"             || warn "render.yaml falta"
@@ -68,28 +77,9 @@ echo "🚀 Verificando configuraciones de deploy..."
 [ -f fly.toml ]                   && ok "fly.toml"                || warn "fly.toml falta"
 [ -f docker-compose.demo.yml ]    && ok "docker-compose.demo.yml" || warn "docker-compose.demo falta"
 
-# ----- 5. Release kit -----
+# ----- 6. Node + node_modules -----
 echo ""
-echo "📢 Verificando release kit..."
-[ -f release/LINKEDIN_KIT.md ]     && ok "LINKEDIN_KIT"     || warn "LINKEDIN_KIT falta"
-[ -f release/GITHUB_RELEASE.md ]   && ok "GITHUB_RELEASE"   || warn "GITHUB_RELEASE falta"
-[ -f release/PRODUCT_HUNT.md ]     && ok "PRODUCT_HUNT"     || warn "PRODUCT_HUNT falta"
-[ -f release/PRESS_KIT.md ]        && ok "PRESS_KIT"        || warn "PRESS_KIT falta"
-
-# ----- 6. TU_USUARIO sin reemplazar -----
-echo ""
-echo "🔍 Buscando placeholders sin reemplazar..."
-if grep -rl "TU_USUARIO" --include="*.md" --include="*.yml" --include="*.json" . 2>/dev/null | head -1 > /dev/null; then
-  warn "Hay archivos con 'TU_USUARIO' sin reemplazar. Lista:"
-  grep -rl "TU_USUARIO" --include="*.md" --include="*.yml" --include="*.json" . 2>/dev/null | head -10 | sed 's/^/  → /'
-  info "Reemplaza con: grep -rl TU_USUARIO . | xargs sed -i 's/TU_USUARIO/tu-github-user/g'"
-else
-  ok "Sin placeholders pendientes"
-fi
-
-# ----- 7. Build del frontend -----
-echo ""
-echo "🏗️  Verificando build del frontend..."
+echo "[6/6] Build prerequisitos..."
 if command -v node >/dev/null 2>&1; then
   ok "Node.js instalado ($(node --version))"
   if [ -d apps/web/node_modules ]; then
@@ -103,15 +93,14 @@ fi
 
 echo ""
 echo "==========================================================="
-echo -e "  ${GREEN}✓ Verificación completada${NC}"
+echo -e "  ${GREEN}Verificación completada${NC}"
 echo "==========================================================="
 echo ""
 echo "Próximos pasos:"
-echo "  1. Reemplaza TU_USUARIO en todos los archivos"
-echo "  2. cd apps/web && npm install && npm run build"
-echo "  3. Toma screenshots reales y guárdalos en release/screenshots/"
-echo "  4. Inicializa git: git init && git add . && git commit -m 'feat: initial public release'"
-echo "  5. Crea repo en GitHub: gh repo create folio --public --source=. --push"
-echo "  6. Deploy: vercel --prod"
-echo "  7. Publica en LinkedIn usando release/LINKEDIN_KIT.md"
+echo "  1. npm install --workspaces --include-workspace-root"
+echo "  2. npm run build -w apps/web"
+echo "  3. npm run dev -w apps/web (modo demo, sin backend)"
+echo "  4. git add . && git commit -m 'feat: ...'"
+echo "  5. git push origin main"
+echo "  6. vercel --prod (opcional, deploy a producción)"
 echo ""

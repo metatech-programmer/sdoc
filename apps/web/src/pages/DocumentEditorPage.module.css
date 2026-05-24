@@ -114,7 +114,7 @@
 }
 
 .status_saved { color: var(--color-success); }
-.status_saving { color: var(--folio-amber-deep); animation: pulse 1.4s ease-in-out infinite; }
+.status_saving { color: var(--sdoc-amber-deep); animation: pulse 1.4s ease-in-out infinite; }
 .status_dirty { color: var(--color-text-muted); }
 .status_offline { color: var(--color-warning); }
 

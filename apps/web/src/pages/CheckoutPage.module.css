@@ -134,8 +134,8 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 2px 6px;
-  background: var(--folio-amber);
-  color: var(--folio-ink);
+  background: var(--sdoc-amber);
+  color: var(--sdoc-ink);
   border-radius: var(--radius-sm);
 }
 

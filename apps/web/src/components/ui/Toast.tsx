@@ -45,14 +45,14 @@ export function ToastViewport() {
   // Anuncia para screen readers
   useEffect(() => {
     if (items.length > 0) {
-      const live = document.getElementById("folio-live");
+      const live = document.getElementById("sdoc-live");
       if (live) live.textContent = items[items.length - 1].message;
     }
   }, [items]);
 
   return (
     <>
-      <div id="folio-live" aria-live="polite" aria-atomic="true" className={styles.sr} />
+      <div id="sdoc-live" aria-live="polite" aria-atomic="true" className={styles.sr} />
       <div className={styles.viewport}>
         {items.map((t) => (
           <div key={t.id} role="status" className={`${styles.toast} ${styles[t.kind]}`}>

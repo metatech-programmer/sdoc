@@ -1,24 +1,26 @@
-# Contribuir a Folio
+# Contribuir a SDOC
 
-¡Gracias por considerar contribuir a Folio! 🎉 Esta guía te ayudará a hacerlo de forma efectiva.
+Gracias por considerar contribuir a SDOC. Esta guía te ayudará a hacerlo de forma efectiva.
+
+> Si eres un asistente de IA, **antes de contribuir** lee [`AGENTS.md`](AGENTS.md), [`SPEC.md`](SPEC.md) y [`docs/AI_TASK_PROTOCOL.md`](docs/AI_TASK_PROTOCOL.md). Son obligatorios.
 
 ---
 
 ## Cómo contribuir
 
-### 🐛 Reportar bugs
+### Reportar bugs
 
 1. Busca primero en [issues abiertos](../../issues) por si alguien ya lo reportó.
 2. Si no existe, abre uno usando la [plantilla de bug](.github/ISSUE_TEMPLATE/bug.md).
 3. Incluye: pasos para reproducir, comportamiento esperado vs. real, screenshots si aplica, versión de navegador/SO.
 
-### ✨ Proponer features
+### Proponer features
 
 1. Abre un issue con la [plantilla de feature request](.github/ISSUE_TEMPLATE/feature.md).
 2. Describe el problema que resuelve (no la solución).
 3. Espera feedback antes de empezar a codear — para no duplicar esfuerzo.
 
-### 🔧 Enviar PRs
+### Enviar PRs
 
 1. **Fork** el repo y crea una rama: `git checkout -b feat/mi-mejora`.
 2. **Codea** siguiendo las convenciones del proyecto (ver abajo).
@@ -35,8 +37,8 @@
 
 ```bash
 # Clonar y entrar
-git clone https://github.com/metatech-programmer/folio.git
-cd folio
+git clone https://github.com/metatech-programmer/sdoc.git
+cd sdoc
 
 # Instalar deps
 npm install --workspaces --include-workspace-root
@@ -61,14 +63,22 @@ docker compose -f docker-compose.demo.yml up -d
 - **Iconos**: SVG inline desde `src/components/ui/Icon.tsx`. **No emojis**.
 - **Accesibilidad**: WCAG AA mínimo. Focus visible, ARIA labels, contraste 4.5:1.
 - **Responsive**: probar en 375px, 768px, 1024px, 1440px.
+- **Zustand**: usa **selectores granulares** (`useStore((s) => s.field)`), nunca desestructures el store entero (causa loops de re-render).
 - **Sin librerías de UI grandes** (no Material UI, Chakra, Mantine). Mantenemos el bundle ligero.
 
 ### Backend (Java/Spring)
 
 - **Java 21+** con virtual threads habilitados.
 - **Spring Boot 3.3+** convenciones (`@RestController`, `@Service`, `@Repository`).
+- **Paquetes**: `app.sdoc.<servicio>`.
 - **Tests**: JUnit 5 + Testcontainers para integración.
-- **Naming**: paquetes en `app.sdoc.<servicio>` (legado), nuevos en `app.folio.<servicio>`.
+- **Outbox Pattern** obligatorio para eventos Kafka que dependen de una transacción de DB. Ver [`SPEC.md`](SPEC.md) §Componente A.
+
+### Backend (Python — render-service)
+
+- **Python 3.12+** con FastAPI + Celery.
+- **Type hints** obligatorios.
+- **Async** donde aplique (handlers FastAPI, SQLAlchemy async).
 
 ### Commits
 
@@ -85,6 +95,8 @@ test:     agregar/corregir tests
 chore:    tareas de mantenimiento (deps, config, etc.)
 ```
 
+**Prohibido en commits:** emojis, `Co-Authored-By: <cualquier IA>`, menciones a IA en general.
+
 ---
 
 ## Code of Conduct
@@ -95,8 +107,8 @@ Lee [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). En resumen: **sé amable, sé prof
 
 ## Preguntas
 
-- [Discussions](../../discussions) para preguntas generales
-- [Issues](../../issues) para bugs y features
-- Para temas privados, usa la sección **Security** del repo
+- [Discussions](../../discussions) para preguntas generales.
+- [Issues](../../issues) para bugs y features.
+- Para temas privados, usa la sección **Security** del repo.
 
-¡Gracias por hacer Folio mejor! 💙
+Gracias por hacer SDOC mejor.

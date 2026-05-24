@@ -29,8 +29,8 @@ export function PricingSection() {
 
   return (
     <section id="pricing" className={styles.section}>
-      <div className="folio-container-narrow" style={{ textAlign: "center" }}>
-        <p className="folio-eyebrow" style={{ justifyContent: "center" }}>
+      <div className="sdoc-container-narrow" style={{ textAlign: "center" }}>
+        <p className="sdoc-eyebrow" style={{ justifyContent: "center" }}>
           {t("pricing.eyebrow")}
         </p>
         <h2 className={styles.title}>
@@ -73,7 +73,7 @@ export function PricingSection() {
         </div>
       </div>
 
-      <div className={`folio-container ${styles.grid}`}>
+      <div className={`sdoc-container ${styles.grid}`}>
         {PLANS.map((plan) => {
           const amountCOP = cycle === "monthly" ? plan.monthlyCOP : plan.yearlyCOP;
           const amount = convertFromCOP(amountCOP, currency);
@@ -136,7 +136,7 @@ export function PricingSection() {
         })}
       </div>
 
-      <div className={`folio-container ${styles.payMethods}`}>
+      <div className={`sdoc-container ${styles.payMethods}`}>
         <p className={styles.payMethodsLabel}>Métodos de pago disponibles</p>
         <div className={styles.payList}>
           {["PSE", "Nequi", "Daviplata", "Bancolombia", "Visa", "Mastercard", "Amex", "Stripe"].map((m) => (

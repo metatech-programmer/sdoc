@@ -16,8 +16,8 @@ export default defineConfig(({ mode }) => {
         injectRegister: "auto",
         includeAssets: ["favicon.svg", "logo.svg", "logo-wordmark.svg"],
         manifest: {
-          name: "Folio · Editor de Documentos",
-          short_name: "Folio",
+          name: "SDOC · Editor",
+          short_name: "SDOC",
           description:
             "Editor colaborativo offline-first. Hecho en Colombia, listo para el mundo.",
           theme_color: "#0F172A",

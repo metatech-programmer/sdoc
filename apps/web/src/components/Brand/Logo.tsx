@@ -1,5 +1,5 @@
 /**
- * Logo Folio — versión mark (icono solo) y wordmark (icono + texto).
+ * Logo SDOC — versión mark (icono solo) y wordmark (icono + texto).
  * Inline SVG para control total de color vía currentColor.
  */
 interface LogoProps {
@@ -9,7 +9,7 @@ interface LogoProps {
   ariaLabel?: string;
 }
 
-export function Logo({ variant = "mark", size = 32, className, ariaLabel = "Folio" }: LogoProps) {
+export function Logo({ variant = "mark", size = 32, className, ariaLabel = "SDOC" }: LogoProps) {
   if (variant === "wordmark") {
     return (
       <svg
@@ -25,7 +25,7 @@ export function Logo({ variant = "mark", size = 32, className, ariaLabel = "Foli
         <rect width="40" height="40" rx="10" fill="currentColor" />
         <path
           d="M11 10h12a6 6 0 0 1 6 6v14H17a6 6 0 0 1-6-6V10z"
-          fill="var(--folio-amber, #F59E0B)"
+          fill="var(--sdoc-amber, #F59E0B)"
         />
         <path d="M19 10v8h8" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         <path d="M15 21h10M15 25h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -38,7 +38,7 @@ export function Logo({ variant = "mark", size = 32, className, ariaLabel = "Foli
           fill="currentColor"
           letterSpacing="-0.5"
         >
-          Folio
+          SDOC
         </text>
       </svg>
     );
@@ -58,7 +58,7 @@ export function Logo({ variant = "mark", size = 32, className, ariaLabel = "Foli
       <rect width="40" height="40" rx="10" fill="currentColor" />
       <path
         d="M11 10h12a6 6 0 0 1 6 6v14H17a6 6 0 0 1-6-6V10z"
-        fill="var(--folio-amber, #F59E0B)"
+        fill="var(--sdoc-amber, #F59E0B)"
       />
       <path d="M19 10v8h8" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
       <path d="M15 21h10M15 25h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

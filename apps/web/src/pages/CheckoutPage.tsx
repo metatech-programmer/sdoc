@@ -23,8 +23,8 @@ type Method =
   | "stripe";
 
 const PLAN_PRICES: Record<string, { name: string; monthly: number }> = {
-  pro: { name: "Folio Pro", monthly: 39_000 },
-  team: { name: "Folio Equipo", monthly: 119_000 },
+  pro: { name: "SDOC Pro", monthly: 39_000 },
+  team: { name: "SDOC Equipo", monthly: 119_000 },
 };
 
 export default function CheckoutPage() {
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
 
   return (
     <AppShell>
-      <div className={`folio-container ${styles.wrap}`}>
+      <div className={`sdoc-container ${styles.wrap}`}>
         <Link to="/" className={styles.backLink}>
           ← Volver
         </Link>

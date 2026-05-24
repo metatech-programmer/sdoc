@@ -1,11 +1,11 @@
 # ============================================================
-# Render.com · Blueprint para desplegar Folio (web + servicios backend)
+# Render.com · Blueprint para desplegar SDOC (web + servicios backend)
 # Plan free para web + PostgreSQL gratis + Redis gratis.
 # ============================================================
 services:
   # Frontend (Static Site — FREE tier)
   - type: web
-    name: folio-web
+    name: sdoc-web
     runtime: static
     rootDir: apps/web
     buildCommand: npm install --workspaces --include-workspace-root && cd apps/web && npm run build
@@ -27,13 +27,13 @@ services:
         value: public, max-age=31536000, immutable
     envVars:
       - key: VITE_API_URL
-        value: https://folio-api.onrender.com/api/v1
+        value: https://sdoc-api.onrender.com/api/v1
       - key: VITE_WS_URL
-        value: wss://folio-api.onrender.com/ws/sync
+        value: wss://sdoc-api.onrender.com/ws/sync
 
   # API Gateway (Web Service — FREE tier)
   - type: web
-    name: folio-api
+    name: sdoc-api
     runtime: docker
     dockerfilePath: ./infrastructure/docker/Dockerfile.gateway
     dockerContext: .
@@ -46,24 +46,24 @@ services:
         value: 10000
       - key: POSTGRES_URL
         fromDatabase:
-          name: folio-postgres
+          name: sdoc-postgres
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: keyvalue
-          name: folio-redis
+          name: sdoc-redis
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
 
 databases:
-  - name: folio-postgres
+  - name: sdoc-postgres
     plan: free
-    databaseName: folio_db
-    user: folio
+    databaseName: sdoc_db
+    user: sdoc
     postgresMajorVersion: 16
 
-  - name: folio-redis
+  - name: sdoc-redis
     type: keyvalue
     plan: free
     ipAllowList: []

@@ -67,10 +67,10 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="folio-container">
+      <div className="sdoc-container">
         <header className={styles.pageHeader}>
           <div>
-            <p className="folio-eyebrow">Tu espacio</p>
+            <p className="sdoc-eyebrow">Tu espacio</p>
             <h1 className={styles.pageTitle}>{t("dashboard.title")}</h1>
           </div>
           <Button

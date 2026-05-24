@@ -24,11 +24,11 @@ export default function LandingPage() {
 
   return (
     <>
-      <a href="#main" className="folio-skip-link">Saltar al contenido</a>
+      <a href="#main" className="sdoc-skip-link">Saltar al contenido</a>
 
       <header className={styles.nav}>
-        <div className={`folio-container ${styles.navInner}`}>
-          <Link to="/" className={styles.brand} aria-label="Folio inicio">
+        <div className={`sdoc-container ${styles.navInner}`}>
+          <Link to="/" className={styles.brand} aria-label="SDOC inicio">
             <Logo variant="wordmark" size={28} />
           </Link>
 
@@ -52,10 +52,10 @@ export default function LandingPage() {
       <main id="main">
         {/* === HERO === */}
         <section className={styles.hero}>
-          <div className="folio-container">
+          <div className="sdoc-container">
             <div className={styles.heroGrid}>
               <div className={styles.heroContent}>
-                <p className="folio-eyebrow">
+                <p className="sdoc-eyebrow">
                   <Sparkles width={14} height={14} /> {t("hero.eyebrow")}
                 </p>
                 <h1 className={styles.heroTitle}>
@@ -102,7 +102,7 @@ export default function LandingPage() {
                       <span className={styles.savedDot} /> {t("editor.saved")}
                     </div>
                     <div className={styles.mockBody}>
-                      <p>Folio es donde las ideas dejan de ser borrador. Cada palabra encuentra su lugar.</p>
+                      <p>SDOC es donde las ideas dejan de ser borrador. Cada palabra encuentra su lugar.</p>
                       <p>Las mejores cosas que he escrito sucedieron en silencio, con la lluvia afuera y un cursor parpadeando.</p>
                       <div className={styles.mockBlock}>
                         <span className={styles.mockBlockTag}>Capítulo 3</span>
@@ -123,7 +123,7 @@ export default function LandingPage() {
 
         {/* === SOCIAL PROOF === */}
         <section className={styles.proof}>
-          <div className="folio-container">
+          <div className="sdoc-container">
             <p className={styles.proofLabel}>Usado por equipos en</p>
             <div className={styles.proofLogos}>
               <span>Universidad Nacional</span>
@@ -138,8 +138,8 @@ export default function LandingPage() {
 
         {/* === FEATURES === */}
         <section id="features" className={styles.features}>
-          <div className="folio-container-narrow">
-            <p className="folio-eyebrow" style={{ justifyContent: "center" }}>
+          <div className="sdoc-container-narrow">
+            <p className="sdoc-eyebrow" style={{ justifyContent: "center" }}>
               {t("features.eyebrow")}
             </p>
             <h2 className={styles.sectionTitle}>
@@ -149,7 +149,7 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className={`folio-container ${styles.featuresGrid}`}>
+          <div className={`sdoc-container ${styles.featuresGrid}`}>
             {[
               { icon: Users, key: "collab" },
               { icon: WifiOff, key: "offline" },
@@ -174,8 +174,8 @@ export default function LandingPage() {
 
         {/* === FINAL CTA === */}
         <section className={styles.finalCta}>
-          <div className="folio-container-narrow" style={{ textAlign: "center" }}>
-            <h2 className={styles.sectionTitle}>Lo siguiente que escribas,<br />que sea en Folio.</h2>
+          <div className="sdoc-container-narrow" style={{ textAlign: "center" }}>
+            <h2 className={styles.sectionTitle}>Lo siguiente que escribas,<br />que sea en SDOC.</h2>
             <p className={styles.finalCtaSub}>{t("hero.subtitle")}</p>
             <div style={{ display: "inline-flex", gap: "0.75rem", marginTop: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
               <Link to="/register">
@@ -189,7 +189,7 @@ export default function LandingPage() {
       </main>
 
       <footer className={styles.footer}>
-        <div className={`folio-container ${styles.footerInner}`}>
+        <div className={`sdoc-container ${styles.footerInner}`}>
           <div className={styles.footerBrand}>
             <Logo variant="wordmark" size={28} />
             <p className={styles.footerTagline}>{t("brand.tagline")}.</p>
@@ -222,7 +222,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className={`folio-container ${styles.footerBottom}`}>
+        <div className={`sdoc-container ${styles.footerBottom}`}>
           <p>{t("footer.copyright", { year })}</p>
         </div>
       </footer>

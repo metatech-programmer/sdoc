@@ -50,7 +50,7 @@ export default function RegisterPage() {
       setTokens(data.accessToken, data.refreshToken);
       const user = await authApi.me();
       setUser(user);
-      toast.success(`¡Bienvenido a Folio, ${user.fullName.split(" ")[0]}!`);
+      toast.success(`¡Bienvenido a SDOC, ${user.fullName.split(" ")[0]}!`);
       navigate("/app");
     } catch {
       setErrors({ form: t("auth.error.generic") });
@@ -62,7 +62,7 @@ export default function RegisterPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link to="/" aria-label="Folio inicio" className={styles.brandLink}>
+        <Link to="/" aria-label="SDOC inicio" className={styles.brandLink}>
           <Logo variant="wordmark" size={26} />
         </Link>
         <div className={styles.headerActions}>

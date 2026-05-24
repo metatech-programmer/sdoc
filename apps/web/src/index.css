@@ -1,5 +1,5 @@
 /* ============================================================
-   Folio · Premium Editorial Design System
+   SDOC · Editorial Design System
    Tokens, reset, base typography, accessibility, dark mode
    ============================================================ */
 
@@ -9,11 +9,11 @@
 
 :root {
   /* === Brand === */
-  --folio-ink: #0F172A;          /* tinta principal */
-  --folio-paper: #FAFAF7;        /* papel crema */
-  --folio-amber: #F59E0B;        /* destacado cálido */
-  --folio-amber-soft: #FBBF24;
-  --folio-amber-deep: #B45309;
+  --sdoc-ink: #0F172A;          /* tinta principal */
+  --sdoc-paper: #FAFAF7;        /* papel crema */
+  --sdoc-amber: #F59E0B;        /* destacado cálido */
+  --sdoc-amber-soft: #FBBF24;
+  --sdoc-amber-deep: #B45309;
 
   /* === Surfaces (Light) === */
   --color-bg: #FAFAF7;
@@ -251,8 +251,8 @@ input, textarea, select {
 
 /* === Selection === */
 ::selection {
-  background: var(--folio-amber);
-  color: var(--folio-ink);
+  background: var(--sdoc-amber);
+  color: var(--sdoc-ink);
 }
 
 /* === Scrollbar === */
@@ -278,20 +278,20 @@ input, textarea, select {
 }
 
 /* === Utility primitives === */
-.folio-container {
+.sdoc-container {
   width: 100%;
   max-width: var(--container);
   margin-inline: auto;
   padding-inline: var(--space-6);
 }
 
-.folio-container-narrow {
+.sdoc-container-narrow {
   max-width: var(--container-narrow);
   margin-inline: auto;
   padding-inline: var(--space-6);
 }
 
-.folio-prose {
+.sdoc-prose {
   max-width: var(--container-prose);
   font-family: var(--font-serif);
   font-size: var(--text-lg);
@@ -299,7 +299,7 @@ input, textarea, select {
   color: var(--color-text);
 }
 
-.folio-eyebrow {
+.sdoc-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -311,7 +311,7 @@ input, textarea, select {
   color: var(--color-text-muted);
 }
 
-.folio-eyebrow::before {
+.sdoc-eyebrow::before {
   content: "";
   width: 24px;
   height: 1px;
@@ -319,7 +319,7 @@ input, textarea, select {
 }
 
 /* === Skip link === */
-.folio-skip-link {
+.sdoc-skip-link {
   position: absolute;
   top: -100px;
   left: var(--space-4);
@@ -331,7 +331,7 @@ input, textarea, select {
   font-weight: 600;
   transition: top var(--duration) var(--ease);
 }
-.folio-skip-link:focus { top: var(--space-4); }
+.sdoc-skip-link:focus { top: var(--space-4); }
 
 /* === Editor (TipTap) === */
 .ProseMirror {

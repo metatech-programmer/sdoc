@@ -1,12 +1,12 @@
 /**
- * Demo mode — datos seed locales para probar Folio sin backend.
+ * Demo mode — datos seed locales para probar SDOC sin backend.
  * Se activa con VITE_DEMO_MODE=true o cuando el API responde >500ms.
  */
 import type { Document, User } from "@sdoc/types";
 
 export const DEMO_USER: User = {
   id: "demo-user-001",
-  email: "demo@folio.app",
+  email: "demo@sdoc.local",
   fullName: "Camila Restrepo",
   plan: "PRO" as any,
   createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() as any,
@@ -124,10 +124,10 @@ export const DEMO_DOCS: Document[] = [
 export const isDemoMode = () =>
   import.meta.env.VITE_DEMO_MODE === "true" ||
   typeof window !== "undefined" &&
-    window.localStorage.getItem("folio.demo") === "true";
+    window.localStorage.getItem("sdoc.demo") === "true";
 
 /** Activa/desactiva demo mode persistente. */
 export function setDemoMode(on: boolean) {
-  if (on) window.localStorage.setItem("folio.demo", "true");
-  else window.localStorage.removeItem("folio.demo");
+  if (on) window.localStorage.setItem("sdoc.demo", "true");
+  else window.localStorage.removeItem("sdoc.demo");
 }

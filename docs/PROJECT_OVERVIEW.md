@@ -146,14 +146,15 @@ sdoc-platform/
 
 | Pieza | Estado |
 |---|---|
-| Auth (login/register) | ✅ Existe (rebranded a "Folio" — pendiente revisar) |
-| Dashboard | ✅ Existe |
-| Editor TipTap + Yjs | ✅ Existe |
-| AppShell + theme switcher + i18n | ⚠️ Agregado, **pero el rebrand a "Folio" no es oficial según `SPEC.md`** |
+| Auth (login/register) con validaciones | ✅ Existe |
+| Dashboard con grid + search + filtros + skeletons | ✅ Existe |
+| Editor TipTap + Yjs + modo zen + autosave indicator | ✅ Existe |
+| AppShell + theme switcher (light/dark/system) + i18n switcher | ✅ Existe |
 | PWA + offline + IndexedDB | ✅ Existe |
-| Checkout (pagos UI) | ⚠️ Agregado fuera de spec — revisar con humano |
-| Landing premium | ⚠️ Agregada fuera de spec original — revisar con humano |
-| Demo mode (fallback sin backend) | ⚠️ Agregado, útil para dev |
+| Checkout UI (PSE, Nequi, Daviplata, Bancolombia, Card, Stripe) | ⚠️ UI mock — fase 4 del roadmap, sin integración real con Wompi/Stripe |
+| Landing | ⚠️ Existe pero copywriting está alineado con "formato" — revisar narrativa periódicamente |
+| Demo mode (fallback sin backend) | ✅ Útil para dev, activa con `VITE_DEMO_MODE=true` o cuando API no responde |
+| Branding | ✅ "SDOC" en toda la app. El logo, OG image, manifest, i18n locales, package name (`@sdoc/web`) usan la marca oficial. |
 
 ### Formato `.sdoc` y librerías TS
 
@@ -245,20 +246,18 @@ archivos locales.
 **Trabajo pendiente:** integrar `packages/sdoc-format` en `apps/web` con
 acciones "Abrir .sdoc", "Descargar como .sdoc".
 
-### GAP 3 — Rebrand "Folio" no autorizado por spec
+### GAP 3 — ~~Rebrand "Folio" no autorizado por spec~~ RESUELTO
 
-**Realidad:** Hay rebranding visual a "Folio" (landing, logo, color palette,
-tipografías Fraunces+Inter, checkout UI, i18n premium).
+Hubo durante un tiempo un rebrand visual a "Folio" que contradecía la spec.
+**Decisión final:** revertir todo a "SDOC". Hoy el repo, package name,
+landing, i18n, OG image, manifest, logo wordmark y meta tags usan
+**únicamente "SDOC"** como marca, alineado con `SPEC.md`.
 
-**Implicación:** `SPEC.md` no menciona "Folio" en ningún lado. La marca
-oficial según la spec es **SDOC Platform**. El rebrand fue una decisión
-fuera de spec.
+El repo público está en `github.com/metatech-programmer/sdoc`.
 
-**Decisión pendiente del humano:**
-- Opción A: Adoptar oficialmente "Folio" como nombre del editor de referencia,
-  manteniendo "SDOC" como nombre del formato (ej: "Folio editor, .sdoc format").
-- Opción B: Revertir el rebrand y mantener "SDOC" como marca única.
-- Opción C: Otro nombre para el editor distinto de "Folio".
+Si en el futuro se decide separar marca del formato (ej: "X editor para
+.sdoc"), debe hacerse **por decisión explícita del humano** y reflejarse
+primero en `SPEC.md`.
 
 ### GAP 4 — Checkout / pagos UI agregada sin estar en fase actual
 
@@ -285,17 +284,24 @@ no "formato". **Debería pivotar a vender el formato `.sdoc`.**
 
 Orden recomendado según `SPEC.md`:
 
-1. **Decidir naming** (Folio vs SDOC vs otro). Sin esto, todo lo demás
-   queda en limbo.
-2. **Implementar `packages/sdoc-format`** completo (Gap 1). Hasta que esto
-   exista, el proyecto no cumple su promesa.
-3. **Conectar editor con el formato** (Gap 2): import/export `.sdoc`.
-4. **Pivotar la landing** a "presentamos el formato `.sdoc`", no "presentamos
-   un editor".
+1. **Implementar `packages/sdoc-format`** completo (Gap 1, prioridad #1).
+   Hasta que esto exista, el proyecto no cumple su promesa central de "ser
+   un nuevo formato de archivo". Incluye JSON Schemas, lib TS
+   read/write/validate, crypto (Ed25519 + AES-256-GCM + HKDF-SHA256).
+2. **Crear archivos `.sdoc` de ejemplo** en `packages/sdoc-format/examples/`
+   y subirlos al repo.
+3. **CLI `sdoc`** (Node) con comandos `validate`, `info`, `pack`, `extract`,
+   `sign`.
+4. **Conectar editor con el formato** (Gap 2): integrar
+   `packages/sdoc-format` en `apps/web` con acciones "Abrir .sdoc" y
+   "Descargar como .sdoc".
 5. **Crear sitio público de la spec** (puede ser `apps/spec-site` o publicar
    `SPEC.md` en GitHub Pages).
 6. **Validar el flujo end-to-end:** crear documento en editor → exportar como
    `.sdoc` → cerrar → reabrir desde disco → debe verse igual.
+
+Estos pasos están alineados con `SPEC.md` §6, §7.4 (render-service para
+exports), §9.5–9.6 (crypto), y §21 (roadmap).
 
 Después de esto, retomar el roadmap original de la spec (Fases 4, 5).
 

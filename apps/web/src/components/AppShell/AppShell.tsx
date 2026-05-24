@@ -57,8 +57,8 @@ export function AppShell({ children, contained = true }: Props) {
   return (
     <div className={styles.shell}>
       <header className={styles.nav}>
-        <div className={`${contained ? "folio-container" : ""} ${styles.navInner}`}>
-          <Link to="/app" className={styles.brand} aria-label="Folio">
+        <div className={`${contained ? "sdoc-container" : ""} ${styles.navInner}`}>
+          <Link to="/app" className={styles.brand} aria-label="SDOC">
             <Logo variant="wordmark" size={26} />
           </Link>
 

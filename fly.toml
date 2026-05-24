@@ -2,7 +2,7 @@
 # Fly.io · Despliegue alternativo del API Gateway
 # Free tier: 3 shared-cpu-1x VMs, 3 GB volúmenes
 # ============================================================
-app = "folio-api"
+app = "sdoc-api"
 primary_region = "bog"   # Bogotá si está disponible; si no: mia (Miami)
 
 [build]

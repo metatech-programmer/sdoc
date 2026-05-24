@@ -1,7 +1,7 @@
 {
-  "name": "@folio/web",
+  "name": "@sdoc/web",
   "version": "1.0.0",
-  "description": "Folio — Editor de documentos colaborativo, offline-first. Hecho en Colombia.",
+  "description": "SDOC — Editor de referencia del formato .sdoc. Colaborativo, offline-first. Hecho en Colombia.",
   "private": true,
   "type": "module",
   "scripts": {

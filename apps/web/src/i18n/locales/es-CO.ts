@@ -4,7 +4,7 @@
  */
 const es = {
   // Brand
-  "brand.tagline": "Documentos que se sienten escritos a mano",
+  "brand.tagline": "Un nuevo formato de archivo para documentos vivos",
   "brand.madeIn": "Hecho en Colombia",
 
   // Nav
@@ -18,21 +18,21 @@ const es = {
 
   // Hero
   "hero.eyebrow": "Lanzamiento 2026",
-  "hero.title": "El editor donde tus ideas\nencuentran su forma final.",
-  "hero.subtitle": "Folio combina edición colaborativa, exportación profesional a PDF/DOCX y trabajo sin conexión. Diseñado en Colombia para creadores de cualquier rincón del mundo.",
+  "hero.title": "El formato de documento\nque no necesita un servidor para vivir.",
+  "hero.subtitle": "SDOC (.sdoc) es un formato de archivo abierto, colaborativo y offline-first. Lleva dentro su historial, sus permisos y su firma. Open source, hecho en Colombia.",
   "hero.cta.primary": "Empezar gratis",
   "hero.cta.secondary": "Ver demo",
   "hero.note": "Sin tarjeta · 1 GB gratis · Cancela cuando quieras",
 
   // Features
-  "features.eyebrow": "Por qué Folio",
+  "features.eyebrow": "Por qué SDOC",
   "features.title": "Una herramienta de escritura\nque respeta tu tiempo.",
 
   "feature.collab.title": "Colaboración en tiempo real",
   "feature.collab.desc": "Edita con tu equipo sin conflictos. Yjs CRDT garantiza que cada cambio llegue, incluso con conexiones inestables.",
 
   "feature.offline.title": "Funciona sin internet",
-  "feature.offline.desc": "Sigue escribiendo en el bus, en el avión o en una vereda sin señal. Folio sincroniza cuando vuelvas en línea.",
+  "feature.offline.desc": "Sigue escribiendo en el bus, en el avión o en una vereda sin señal. SDOC sincroniza cuando vuelvas en línea.",
 
   "feature.export.title": "Exporta como un profesional",
   "feature.export.desc": "PDF, DOCX, HTML o EPUB. Plantillas pensadas para informes ejecutivos, tesis y publicaciones.",
@@ -100,7 +100,7 @@ const es = {
   "auth.submit.signUp": "Crear cuenta",
   "auth.loading": "Un momento…",
   "auth.terms": "Al crear cuenta aceptas los Términos y la Política de Privacidad.",
-  "auth.noAccount": "¿Eres nuevo en Folio?",
+  "auth.noAccount": "¿Eres nuevo en SDOC?",
   "auth.hasAccount": "¿Ya tienes cuenta?",
   "auth.error.invalidEmail": "Correo no válido",
   "auth.error.shortPassword": "Mínimo 8 caracteres",
@@ -162,7 +162,7 @@ const es = {
   "footer.habeas": "Habeas Data",
   "footer.contact": "Contacto",
   "footer.status": "Estado del servicio",
-  "footer.copyright": "© {year} Folio. Hecho con cariño en Medellín, Colombia.",
+  "footer.copyright": "© {year} SDOC. Hecho con cariño en Medellín, Colombia.",
 
   // Common
   "common.cancel": "Cancelar",

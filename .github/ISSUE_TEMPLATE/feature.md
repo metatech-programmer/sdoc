@@ -1,6 +1,6 @@
 ---
 name: ✨ Proponer feature
-about: Tienes una idea para mejorar Folio
+about: Tienes una idea para mejorar SDOC
 title: "[FEATURE] "
 labels: enhancement
 assignees: ''

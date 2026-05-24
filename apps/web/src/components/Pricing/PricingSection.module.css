@@ -74,12 +74,12 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 2px 6px;
-  background: var(--folio-amber);
-  color: var(--folio-ink);
+  background: var(--sdoc-amber);
+  color: var(--sdoc-ink);
   border-radius: var(--radius-sm);
 }
 
-.cycleActive .saveTag { background: var(--folio-amber); color: var(--folio-ink); }
+.cycleActive .saveTag { background: var(--sdoc-amber); color: var(--sdoc-ink); }
 
 .currencyBtn {
   font-family: var(--font-sans);
@@ -137,8 +137,8 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 5px 12px;
-  background: var(--folio-amber);
-  color: var(--folio-ink);
+  background: var(--sdoc-amber);
+  color: var(--sdoc-ink);
   font-family: var(--font-sans);
   font-size: 0.6875rem;
   font-weight: 700;

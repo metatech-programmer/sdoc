@@ -1,14 +1,14 @@
 # ============================================================
-# Folio · Stack de demo mínimo (3 contenedores en vez de 23).
+# SDOC · Stack de demo mínimo (3 contenedores en vez de 23).
 # Solo lo que necesitas para ver la app funcionando localmente.
 # Uso: docker compose -f docker-compose.demo.yml up -d
 # ============================================================
 
 services:
-  # Frontend Folio (Vite preview) — http://localhost:3000
-  folio-web:
+  # Frontend SDOC (Vite preview) — http://localhost:3000
+  sdoc-web:
     image: node:20-alpine
-    container_name: folio-web
+    container_name: sdoc-web
     working_dir: /app
     ports:
       - "3000:3000"
@@ -28,17 +28,17 @@ services:
   # PostgreSQL para persistencia (opcional, no requerido por demo mode)
   postgres:
     image: postgres:16-alpine
-    container_name: folio-postgres
+    container_name: sdoc-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: folio_db
-      POSTGRES_USER: folio
-      POSTGRES_PASSWORD: folio_demo_pw_change_me
+      POSTGRES_DB: sdoc_db
+      POSTGRES_USER: sdoc
+      POSTGRES_PASSWORD: sdoc_demo_pw_change_me
     volumes:
-      - folio_pg:/var/lib/postgresql/data
+      - sdoc_pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U folio -d folio_db"]
+      test: ["CMD-SHELL", "pg_isready -U sdoc -d sdoc_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -46,15 +46,15 @@ services:
   # Redis para sesiones (opcional)
   redis:
     image: redis:7.2-alpine
-    container_name: folio-redis
+    container_name: sdoc-redis
     ports:
       - "6379:6379"
-    command: redis-server --requirepass folio_demo_pw_change_me
+    command: redis-server --requirepass sdoc_demo_pw_change_me
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "folio_demo_pw_change_me", "ping"]
+      test: ["CMD", "redis-cli", "-a", "sdoc_demo_pw_change_me", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
 
 volumes:
-  folio_pg:
+  sdoc_pg:

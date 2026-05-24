@@ -40,7 +40,7 @@ export const useThemeStore = create<ThemeStore>()(
       },
     }),
     {
-      name: "folio.theme",
+      name: "sdoc.theme",
       onRehydrateStorage: () => (state) => {
         if (state) applyTheme(state.theme);
       },

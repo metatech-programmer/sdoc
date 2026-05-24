@@ -9,7 +9,7 @@
 
 ## Reportar una vulnerabilidad
 
-Si encuentras una vulnerabilidad de seguridad en Folio, **NO** abras un issue público.
+Si encuentras una vulnerabilidad de seguridad en SDOC, **NO** abras un issue público.
 
 ### Cómo reportar
 
@@ -40,12 +40,12 @@ Reconocemos públicamente a quienes reportan vulnerabilidades válidas:
 
 ## Buenas prácticas para usuarios
 
-Si auto-hosteas Folio:
+Si auto-hosteas SDOC:
 
 - ✅ Usa HTTPS siempre (Vercel/Render/Cloudflare lo dan gratis).
 - ✅ Rota `JWT_SECRET` periódicamente (`openssl rand -base64 32`).
 - ✅ Activa MFA en Keycloak.
-- ✅ Mantén Folio actualizado: `git pull && docker compose up -d --build`.
+- ✅ Mantén SDOC actualizado: `git pull && docker compose up -d --build`.
 - ✅ Backup diario de Postgres (Neon lo hace automático).
 - ❌ No publiques tu `.env` en GitHub.
 - ❌ No uses passwords débiles en cuentas admin.

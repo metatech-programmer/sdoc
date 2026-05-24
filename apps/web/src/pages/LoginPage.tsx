@@ -54,7 +54,7 @@ export default function LoginPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link to="/" aria-label="Folio inicio" className={styles.brandLink}>
+        <Link to="/" aria-label="SDOC inicio" className={styles.brandLink}>
           <Logo variant="wordmark" size={26} />
         </Link>
         <div className={styles.headerActions}>

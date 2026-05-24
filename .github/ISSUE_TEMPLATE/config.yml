@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 Discusiones generales
-    url: https://github.com/metatech-programmer/folio/discussions
+    url: https://github.com/metatech-programmer/sdoc/discussions
     about: Para preguntas, ideas y conversaciones que no son bugs ni features
   - name: 📧 Reporte de seguridad
-    url: https://github.com/metatech-programmer/folio/security/policy
+    url: https://github.com/metatech-programmer/sdoc/security/policy
     about: Para vulnerabilidades — NO uses issues públicos
   - name: 📚 Documentación
-    url: https://github.com/metatech-programmer/folio#readme
+    url: https://github.com/metatech-programmer/sdoc#readme
     about: Empieza por el README y los docs

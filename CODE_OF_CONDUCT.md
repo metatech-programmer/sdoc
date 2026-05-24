@@ -2,7 +2,7 @@
 
 ## Nuestro compromiso
 
-Como miembros, contribuidores y líderes de Folio, nos comprometemos a hacer de la participación en nuestra comunidad una experiencia libre de acoso para todas las personas, sin importar edad, talla corporal, discapacidad visible o invisible, etnia, características sexuales, identidad y expresión de género, nivel de experiencia, educación, estatus socioeconómico, nacionalidad, apariencia personal, raza, religión, identidad u orientación sexual.
+Como miembros, contribuidores y líderes de SDOC, nos comprometemos a hacer de la participación en nuestra comunidad una experiencia libre de acoso para todas las personas, sin importar edad, talla corporal, discapacidad visible o invisible, etnia, características sexuales, identidad y expresión de género, nivel de experiencia, educación, estatus socioeconómico, nacionalidad, apariencia personal, raza, religión, identidad u orientación sexual.
 
 ## Nuestros estándares
 

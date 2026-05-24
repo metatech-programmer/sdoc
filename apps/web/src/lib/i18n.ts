@@ -45,7 +45,7 @@ export const useLocaleStore = create<LocaleStore>()(
         set({ locale });
       },
     }),
-    { name: "folio.locale" }
+    { name: "sdoc.locale" }
   )
 );
 

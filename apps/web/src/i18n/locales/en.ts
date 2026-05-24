@@ -1,5 +1,5 @@
 const en = {
-  "brand.tagline": "Documents that feel handwritten",
+  "brand.tagline": "A new open file format for living documents",
   "brand.madeIn": "Made in Colombia",
 
   "nav.features": "Features",
@@ -11,20 +11,20 @@ const en = {
   "nav.signOut": "Sign out",
 
   "hero.eyebrow": "Now in 2026",
-  "hero.title": "The editor where your ideas\nfind their final form.",
-  "hero.subtitle": "Folio blends real-time collaboration, professional PDF/DOCX export and offline-first writing. Designed in Colombia for creators anywhere.",
+  "hero.title": "The document format\nthat doesn't need a server to live.",
+  "hero.subtitle": "SDOC (.sdoc) is an open file format: collaborative, offline-first, signed and encryptable. It carries its history, permissions and signature inside. Open source, made in Colombia.",
   "hero.cta.primary": "Start free",
   "hero.cta.secondary": "Watch demo",
   "hero.note": "No card · 1 GB free · Cancel anytime",
 
-  "features.eyebrow": "Why Folio",
+  "features.eyebrow": "Why SDOC",
   "features.title": "A writing tool\nthat respects your time.",
 
   "feature.collab.title": "Real-time collaboration",
   "feature.collab.desc": "Edit with your team without conflicts. Yjs CRDT guarantees every change syncs, even on flaky networks.",
 
   "feature.offline.title": "Works offline",
-  "feature.offline.desc": "Keep writing on the bus, on a plane or in a remote village. Folio syncs when you're back online.",
+  "feature.offline.desc": "Keep writing on the bus, on a plane or in a remote village. SDOC syncs when you're back online.",
 
   "feature.export.title": "Export like a pro",
   "feature.export.desc": "PDF, DOCX, HTML or EPUB. Templates built for executive reports, theses and publications.",
@@ -90,7 +90,7 @@ const en = {
   "auth.submit.signUp": "Create account",
   "auth.loading": "Just a moment…",
   "auth.terms": "By creating an account you agree to the Terms and Privacy Policy.",
-  "auth.noAccount": "New to Folio?",
+  "auth.noAccount": "New to SDOC?",
   "auth.hasAccount": "Already have an account?",
   "auth.error.invalidEmail": "Invalid email",
   "auth.error.shortPassword": "Min 8 characters",
@@ -148,7 +148,7 @@ const en = {
   "footer.habeas": "Habeas Data",
   "footer.contact": "Contact",
   "footer.status": "Status",
-  "footer.copyright": "© {year} Folio. Made with care in Medellín, Colombia.",
+  "footer.copyright": "© {year} SDOC. Made with care in Medellín, Colombia.",
 
   "common.cancel": "Cancel",
   "common.confirm": "Confirm",

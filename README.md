@@ -1,20 +1,20 @@
 <div align="center">
 
-<img src="apps/web/public/logo.svg" alt="Folio" width="80" height="80" />
+<img src="apps/web/public/logo.svg" alt="SDOC" width="80" height="80" />
 
-# Folio
+# SDOC Platform
 
-### Documentos que se sienten escritos a mano.
+### Un nuevo formato de archivo abierto para documentos vivos.
 
-Editor de documentos colaborativo, offline-first y diseñado para mentes creativas.<br/>
-Hecho en Colombia, listo para el mundo.
+`.sdoc` es a `.pdf` lo que `.pdf` fue a `.ps`: el siguiente paso.<br/>
+Colaborativo, offline-first, firmable, cifrable y siempre portable.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B.svg?style=for-the-badge)](LICENSE)
 [![Made in Colombia](https://img.shields.io/badge/Made_in-Colombia-0F172A?style=for-the-badge)](#)
 [![Stack](https://img.shields.io/badge/stack-React_+_Spring_+_Yjs-0F172A?style=for-the-badge)](#stack)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-16A34A?style=for-the-badge)](CONTRIBUTING.md)
 
-[**Documentación**](docs/) · [**Roadmap**](#roadmap) · [**Reportar bug**](../../issues/new/choose)
+[**Spec del formato**](SPEC.md) · [**Documentación**](docs/) · [**Roadmap**](#roadmap) · [**Reportar bug**](../../issues/new/choose)
 
 </div>
 
@@ -34,33 +34,56 @@ Hecho en Colombia, listo para el mundo.
 
 ---
 
-## Por qué Folio
+## Qué es SDOC
+
+**SDOC NO es un editor.** Es un **formato de archivo abierto** (`.sdoc`) — un ZIP+JSON con estructura estricta que incluye, dentro del propio archivo:
+
+- Contenido estructurado (texto, imágenes, tablas, código, embeds).
+- Historial completo de versiones.
+- ACL (permisos) embebida.
+- Estado CRDT (Yjs) para sincronización offline-first.
+- Firma criptográfica (Ed25519) y metadatos de cifrado (AES-256-GCM).
+- Preview universal (thumbnail + HTML auto-contenido).
+
+Este repositorio contiene:
+
+| Pieza | Estado |
+|---|---|
+| **Especificación del formato `.sdoc`** | [`SPEC.md`](SPEC.md) §6 |
+| **Plataforma de referencia** (8 microservicios Java + render-service Python) | `services/` |
+| **Editor web de referencia** (React 18 + TipTap + Yjs) | `apps/web/` |
+| **Librerías TS** para leer/escribir `.sdoc` | `packages/sdoc-format/` *(en progreso)* |
+| **Infraestructura** (Docker, K8s, Helm, Vault, Keycloak, Kafka) | `infrastructure/` |
+
+---
+
+## Por qué `.sdoc`
 
 | | |
 |---|---|
-| **Colaboración real-time** | Edición simultánea sin conflictos con Yjs CRDT. Funciona incluso con redes inestables. |
-| **Offline-first** | Sigue escribiendo sin internet. Folio sincroniza automáticamente al reconectar. |
-| **Exporta como pro** | PDF, DOCX, HTML y EPUB con plantillas pensadas para informes, tesis y publicaciones. |
-| **Seguridad bancaria** | AES-256-GCM en reposo, JWT en tránsito, OPA para permisos granulares. GDPR + Habeas Data. |
-| **Pensado para Colombia** | Precios en COP, IVA discriminado, validación cédula/NIT, facturación electrónica DIAN-ready. |
-| **Listo para el mundo** | i18n en español, inglés y portugués. Multi-moneda. Diseño accesible WCAG AA. |
+| **Vive en un solo archivo** | Cualquier `.sdoc` lleva dentro su historial, sus assets, sus permisos y su firma. Portable y soberano. |
+| **Colaboración nativa** | El archivo contiene el estado CRDT (Yjs). Cualquier app que entienda la spec puede seguir editando colaborativamente. |
+| **Offline-first real** | No depende de un servidor para existir. El servidor es solo un peer más en la red CRDT. |
+| **Export fiel** | PDF, DOCX, HTML, EPUB. Plantillas para informes ejecutivos, tesis y publicaciones. |
+| **Seguridad bancaria** | AES-256-GCM + HKDF-SHA256 para cifrado, Ed25519 para firma, OPA para permisos finos. |
+| **Abierto** | ZIP + JSON. Cualquiera puede inspeccionarlo, validarlo, implementarlo. Licencia MIT. |
 
 ---
 
 ## Empezar en 30 segundos
 
-### Opción 1 — Solo frontend (modo demo, sin backend)
+### Opción 1 — Frontend en modo demo (sin backend)
 
 ```bash
-git clone https://github.com/metatech-programmer/folio.git
-cd folio
+git clone https://github.com/metatech-programmer/sdoc.git
+cd sdoc
 npm install --workspaces --include-workspace-root
 npm run dev -w apps/web
 ```
 
-Abre [http://localhost:3000](http://localhost:3000). Folio detecta que no hay backend y activa **modo demo** con 6 documentos seed. Cero configuración.
+Abre [http://localhost:3000](http://localhost:3000). El editor detecta que no hay backend y activa **modo demo** con documentos seed. Cero configuración.
 
-### Opción 2 — Stack mínimo con Docker (3 contenedores)
+### Opción 2 — Stack mínimo con Docker
 
 ```bash
 docker compose -f docker-compose.demo.yml up -d
@@ -70,18 +93,18 @@ Web + Postgres + Redis arriba en ~60 segundos.
 
 ### Opción 3 — Plataforma completa (microservicios)
 
-Ver [GETTING-STARTED.md](GETTING-STARTED.md) para el stack completo con 8 microservicios + Kafka + Keycloak.
+Ver [GETTING-STARTED.md](GETTING-STARTED.md) para el stack completo con 8 microservicios + Kafka + Keycloak + Vault.
 
 ---
 
 ## Desplegar gratis
 
-Folio se despliega en pocos minutos con planes gratuitos:
+SDOC se despliega en pocos minutos con planes gratuitos:
 
-- **Vercel** (frontend) — un comando, dominio HTTPS automático
-- **Render** (API) — free tier con auto-deploy desde Git
-- **Neon** (Postgres) — 0.5 GB gratis, sin tarjeta
-- **Upstash** (Redis) — 10 K comandos/día gratis
+- **Vercel** (frontend) — un comando, HTTPS automático.
+- **Render** (API) — free tier con auto-deploy desde Git.
+- **Neon** (Postgres) — 0.5 GB gratis, sin tarjeta.
+- **Upstash** (Redis) — 10 K comandos/día gratis.
 
 ```bash
 vercel --prod
@@ -142,7 +165,7 @@ Guía completa en [DEPLOY.md](DEPLOY.md).
 </tr>
 </table>
 
-Arquitectura completa en [docs/architecture.md](docs/architecture.md).
+Arquitectura completa en [`SPEC.md`](SPEC.md) §3.
 
 ---
 
@@ -159,25 +182,30 @@ npm run dev -w apps/web
 
 ## Roadmap
 
-- [x] Editor colaborativo Yjs
+Roadmap completo en [`SPEC.md`](SPEC.md) §21. Estado actual sintetizado en [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md).
+
+- [x] Microservicios core (auth, document, sync, asset, version, notification, render)
+- [x] API Gateway con JWT, rate limit, idempotency
+- [x] Editor de referencia (React + TipTap + Yjs)
 - [x] Exportación PDF / DOCX / HTML
-- [x] i18n (ES-CO, EN, PT-BR)
-- [x] Localización Colombia (COP, IVA, cédula/NIT)
-- [x] PWA · Offline-first
-- [x] Dark mode
-- [ ] Plantillas (tesis, propuesta, contrato)
-- [ ] App móvil React Native
+- [x] PWA · Offline-first · Dark mode
+- [ ] **`packages/sdoc-format`**: librería TS read/write/validate del formato real (prioridad)
+- [ ] **JSON Schemas oficiales** del formato (`manifest.v1.json`, `document.v1.json`)
+- [ ] **CLI `sdoc`**: validate, info, pack, extract, sign
+- [ ] Import/export `.sdoc` desde el editor web
+- [ ] App móvil
 - [ ] Marketplace de plantillas
 
 ---
 
 ## Contribuir
 
-¡Toda contribución es bienvenida! Lee [CONTRIBUTING.md](CONTRIBUTING.md) para empezar.
+Toda contribución es bienvenida. Lee [CONTRIBUTING.md](CONTRIBUTING.md) para empezar.
 
 Cosas en las que se puede ayudar:
 
-- Traducir Folio a otros idiomas
+- Traducir SDOC a otros idiomas
+- Implementar piezas del formato (`packages/sdoc-format`)
 - Crear plantillas
 - Mejorar la documentación
 - Reportar bugs
@@ -187,7 +215,7 @@ Cosas en las que se puede ayudar:
 
 ## Licencia
 
-[MIT](LICENSE) — usa Folio para lo que quieras, comercial o personal.
+[MIT](LICENSE) — usa SDOC para lo que quieras, comercial o personal.
 
 ---
 
@@ -203,6 +231,6 @@ Hecho con cariño en Medellín, Colombia.
 
 Construido sobre los hombros de gigantes: [TipTap](https://tiptap.dev) · [Yjs](https://yjs.dev) · [Spring](https://spring.io) · [React](https://react.dev) · [Vite](https://vitejs.dev).
 
-**Si Folio te resulta útil, dale ⭐ al repo.**
+**Si SDOC te resulta útil, dale ⭐ al repo.**
 
 </div>

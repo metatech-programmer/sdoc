@@ -1,6 +1,6 @@
 ---
 name: 💬 Pregunta
-about: Tienes una duda sobre Folio
+about: Tienes una duda sobre SDOC
 title: "[PREGUNTA] "
 labels: question
 assignees: ''

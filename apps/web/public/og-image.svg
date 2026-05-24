@@ -25,19 +25,19 @@
     <path d="M30 42h20M30 50h14" stroke="#0F172A" stroke-width="3" stroke-linecap="round" fill="none"/>
   </g>
 
-  <text x="200" y="148" font-family="Fraunces, Georgia, serif" font-size="48" font-weight="600" fill="#0F172A" letter-spacing="-2">Folio</text>
+  <text x="200" y="148" font-family="Fraunces, Georgia, serif" font-size="48" font-weight="600" fill="#0F172A" letter-spacing="-2">SDOC</text>
 
   <!-- Headline -->
   <text x="96" y="290" font-family="Fraunces, Georgia, serif" font-size="76" font-weight="600" fill="#0F172A" letter-spacing="-3">
-    Documentos
+    Un nuevo formato
   </text>
   <text x="96" y="372" font-family="Fraunces, Georgia, serif" font-size="76" font-weight="600" font-style="italic" fill="#64748B" letter-spacing="-3">
-    que se sienten escritos a mano.
+    para documentos vivos.
   </text>
 
   <!-- Subtext -->
   <text x="96" y="448" font-family="Inter, sans-serif" font-size="26" fill="#334155">
-    Editor colaborativo · Offline-first · Exporta a PDF/DOCX
+    .sdoc · Colaborativo · Offline-first · Open Source (MIT)
   </text>
 
   <!-- Footer chip -->
@@ -46,6 +46,6 @@
     <text x="22" y="25" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#FAFAF7" letter-spacing="1.5">HECHO EN COLOMBIA</text>
   </g>
   <text x="340" y="578" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#64748B" letter-spacing="1.5">
-    folio.app
+    github.com/metatech-programmer/sdoc
   </text>
 </svg>
