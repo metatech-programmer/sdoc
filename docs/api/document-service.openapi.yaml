@@ -1,0 +1,355 @@
+openapi: 3.1.0
+info:
+  title: SDOC · document-service API
+  version: "1.0.0"
+  description: |
+    API REST del `document-service` de la plataforma SDOC.
+
+    Cubre el CRUD de documentos + import/export del formato oficial `.sdoc`
+    (ZIP + JSON canónico). Toda firma se verifica con Ed25519 y todo cifrado
+    usa AES-256-GCM con HKDF-SHA256 (ver `SPEC.md` §6 y §9.3).
+
+    Esta spec es generada manualmente desde el código en `DocumentControllerV1`.
+    Para la versión auto-generada por Springdoc en runtime, consulta
+    `GET /v3/api-docs` o `GET /swagger-ui.html` cuando el servicio está arriba.
+  license:
+    name: MIT
+    url: https://github.com/metatech-programmer/sdoc/blob/main/LICENSE
+  contact:
+    name: SDOC Project
+    url: https://github.com/metatech-programmer/sdoc
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Desarrollo local (via api-gateway)
+  - url: https://api.tudominio.com/api/v1
+    description: Producción
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Documents
+    description: CRUD básico de documentos
+  - name: SDOC Format
+    description: Import/export del formato oficial .sdoc
+  - name: Search
+    description: Búsqueda full-text (PostgreSQL FTS)
+
+paths:
+  /documents:
+    get:
+      tags: [Documents]
+      summary: Listar documentos del usuario autenticado
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Página de documentos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDocumentResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Documents]
+      summary: Crear documento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentRequest'
+      responses:
+        '201':
+          description: Documento creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /documents/{id}:
+    parameters:
+      - $ref: '#/components/parameters/DocumentId'
+    get:
+      tags: [Documents]
+      summary: Obtener documento por ID
+      responses:
+        '200':
+          description: Documento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Documents]
+      summary: Reemplazar contenido del documento (full update)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: JSON arbitrario del contenido (TipTap doc o estructura SDOC §6).
+              type: object
+      responses:
+        '200':
+          description: Documento actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentResponse' }
+    delete:
+      tags: [Documents]
+      summary: Eliminar documento (soft delete)
+      responses:
+        '204': { description: Eliminado }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /documents/{id}/content:
+    parameters:
+      - $ref: '#/components/parameters/DocumentId'
+    patch:
+      tags: [Documents]
+      summary: Actualizar solo el contenido (patch)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: object }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentResponse' }
+
+  /documents/{id}/download.sdoc:
+    parameters:
+      - $ref: '#/components/parameters/DocumentId'
+    get:
+      tags: [SDOC Format]
+      summary: Descargar documento como archivo .sdoc (ZIP+JSON)
+      description: |
+        Genera el archivo `.sdoc` oficial del documento con:
+          - `manifest.json` (metadata + checksums SHA-256)
+          - `content/document.json` (estructura SDOC §6 canónica)
+
+        Los checksums son **bit-compatibles** con los que produce
+        `@sdoc/format` (TypeScript). Ver `SPEC.md` §6.
+
+        El cliente puede luego firmar el archivo con Ed25519 o cifrarlo
+        con AES-256-GCM usando `@sdoc/format`.
+      responses:
+        '200':
+          description: Archivo .sdoc binario
+          headers:
+            Content-Disposition:
+              schema: { type: string, example: 'attachment; filename="documento.sdoc"' }
+          content:
+            application/vnd.sdoc+zip:
+              schema:
+                type: string
+                format: binary
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /documents/import.sdoc:
+    post:
+      tags: [SDOC Format]
+      summary: Importar un archivo .sdoc y crear documento nuevo
+      description: |
+        Sube un `.sdoc` y crea un documento nuevo a nombre del usuario
+        autenticado. El owner es **siempre** el usuario JWT, NO el declarado
+        en el manifest (anti-impersonación).
+
+        El backend valida estructura + JSON Schemas + checksums SHA-256.
+        Rechaza:
+          - Archivos vacíos o > 50 MB.
+          - ZIP corrupto / sin `manifest.json` o `content/document.json`.
+          - `formatVersion` no soportado (solo 1.0.x en esta versión).
+          - `encryptedContent: true` (cifrado se descifra en cliente con
+            `@sdoc/format`).
+          - Checksums alterados.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Archivo .sdoc a importar
+      responses:
+        '201':
+          description: Documento creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentResponse' }
+        '400':
+          description: Archivo inválido / checksums fallidos / formato no soportado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SdocReadError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413':
+          description: Archivo demasiado grande (> 50 MB)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SdocReadError' }
+
+  /documents/search:
+    get:
+      tags: [Search]
+      summary: Búsqueda full-text (PostgreSQL FTS)
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string, minLength: 1 }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Resultados rankeados por relevancia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedDocumentResponse' }
+
+  /documents/public:
+    get:
+      tags: [Documents]
+      summary: Listar documentos públicos
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Documentos públicos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedDocumentResponse' }
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT emitido por Keycloak (realm `sdoc`). Se valida en el
+        api-gateway (filtro JwtFilter) antes de llegar al servicio.
+
+  parameters:
+    DocumentId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+      description: ID UUID del documento
+    Page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 0, default: 0 }
+    Size:
+      in: query
+      name: size
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    BadRequest:
+      description: Petición inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Unauthorized:
+      description: Sin JWT válido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Documento no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    CreateDocumentRequest:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        description: { type: string }
+        language: { type: string, maxLength: 10, example: "es-CO" }
+        tags:
+          type: array
+          items: { type: string }
+        content:
+          description: JSON inicial del contenido (TipTap o SDOC §6)
+          type: object
+
+    DocumentResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        ownerId: { type: string, format: uuid }
+        status: { type: string, enum: [DRAFT, PUBLISHED, ARCHIVED, DELETED] }
+        language: { type: string }
+        version: { type: integer }
+        wordCount: { type: integer }
+        pageCount: { type: integer }
+        sizeBytes: { type: integer }
+        isPublic: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+        content: { type: object, description: "JSON del contenido" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    PagedDocumentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/DocumentResponse' }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+
+    SdocReadError:
+      type: object
+      properties:
+        error: { type: string, example: "sdoc_read_failed" }
+        code:
+          type: string
+          enum:
+            - empty
+            - too_large
+            - missing_required
+            - format_unsupported
+            - encrypted_unsupported
+            - checksum_mismatch
+            - structural
+            - internal
+        message: { type: string }
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer }
+        error: { type: string }
+        message: { type: string }
+        path: { type: string }

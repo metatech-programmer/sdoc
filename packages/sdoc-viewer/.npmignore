@@ -1,0 +1,23 @@
+# Lo que NO se incluye al hacer `npm publish`.
+# Por defecto npm incluye TODO excepto: node_modules, .git, .npmignore.
+# Tenemos `"files": ["dist", "README.md"]` en package.json — esto es
+# redundancia defensiva.
+
+# Tests
+tests/
+*.test.ts
+vitest.config.ts
+
+# Build configs
+tsup.config.ts
+tsconfig.json
+tsconfig.tsbuildinfo
+
+# Source (publicamos solo dist/ compilado)
+src/
+
+# Otros
+.DS_Store
+*.log
+.env*
+coverage/

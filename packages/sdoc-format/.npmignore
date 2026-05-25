@@ -1,0 +1,36 @@
+# Lo que NO se incluye al hacer `npm publish`.
+# Por defecto npm incluye TODO excepto: node_modules, .git, .npmignore.
+# Pero tenemos `"files": ["dist", "src/schemas", "README.md"]` en
+# package.json, así que esto es solo redundancia defensiva.
+
+# Tests no deben empaquetarse en lo publicado
+tests/
+*.test.ts
+*.test.js
+vitest.config.ts
+vitest.config.js
+
+# Build configs
+tsup.config.ts
+tsconfig.json
+tsconfig.tsbuildinfo
+
+# Source code (publicamos solo dist/ compilado)
+src/cli/
+src/core.ts
+src/types.ts
+src/index.ts
+src/validator.ts
+src/utils/
+src/crypto/
+# Mantenemos src/schemas/ porque "files" lo incluye y los JSON Schemas
+# son útiles para consumidores que validan con otros runtime (Pydantic, etc.)
+
+# Examples (van en el repo, no en el paquete npm — pesan ~5 KB c/u)
+examples/
+
+# Otros
+.DS_Store
+*.log
+.env*
+coverage/

@@ -1,0 +1,70 @@
+# ============================================================
+# Dockerfile.gateway — Build multi-stage del api-gateway desde fuentes.
+#
+# Lo usan render.yaml, railway.toml y fly.toml para construir y desplegar
+# el API Gateway de SDOC. Compila el proyecto Gradle dentro del contenedor
+# (las plataformas no tienen Gradle preinstalado; tampoco hay gradlew en
+# el repo, así que usamos la imagen oficial de Gradle).
+#
+# Build context esperado: raíz del monorepo.
+# Construye con:
+#   docker build -f infrastructure/docker/Dockerfile.gateway -t sdoc-gateway .
+# ============================================================
+
+# -----------------------------
+# Stage 1: build con Gradle oficial
+# -----------------------------
+FROM gradle:8.14.2-jdk21-alpine AS builder
+
+WORKDIR /workspace
+
+# Copiamos primero los scripts Gradle del monorepo para cachear deps.
+COPY --chown=gradle:gradle settings.gradle.kts build.gradle.kts ./
+COPY --chown=gradle:gradle gradle/ gradle/
+
+# Módulos involucrados en la build del gateway.
+COPY --chown=gradle:gradle services/api-gateway/build.gradle.kts services/api-gateway/
+COPY --chown=gradle:gradle shared/java-commons/build.gradle.kts shared/java-commons/
+COPY --chown=gradle:gradle shared/avro-schemas/ shared/avro-schemas/
+
+# Pre-descarga de deps (mejor caché de capas en builds incrementales).
+RUN gradle :services:api-gateway:dependencies --no-daemon --quiet || true
+
+# Ahora sí, copiamos las fuentes y compilamos.
+COPY --chown=gradle:gradle shared/java-commons/src/ shared/java-commons/src/
+COPY --chown=gradle:gradle services/api-gateway/src/ services/api-gateway/src/
+
+RUN gradle :services:api-gateway:bootJar --no-daemon -x test \
+    && cp services/api-gateway/build/libs/*.jar /workspace/app.jar
+
+# -----------------------------
+# Stage 2: runtime mínimo (JRE alpine)
+# -----------------------------
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+# Usuario no-root por seguridad.
+RUN addgroup -S sdoc && adduser -S sdoc -G sdoc
+USER sdoc
+
+WORKDIR /app
+COPY --from=builder --chown=sdoc:sdoc /workspace/app.jar app.jar
+
+# Puerto por defecto; las plataformas con $PORT (Render=10000, Railway dinámico,
+# Fly=8080) lo sobrescriben via env var.
+EXPOSE 8080
+
+# Healthcheck nativo (wget viene incluido en alpine JRE images).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD wget -qO- "http://localhost:${PORT:-8080}/actuator/health" \
+      | grep -q '"status":"UP"' || exit 1
+
+# JVM flags para contenedores:
+# - MaxRAMPercentage 75: usa hasta 75% del cgroup memory (no del host).
+# - G1GC: GC predecible para latencias razonables.
+# - Virtual Threads: ya habilitados via application.yml de Spring Boot 3.3+.
+# - egd: entropy source no bloqueante para arranque rápido.
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom"
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV PORT=8080
+
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
